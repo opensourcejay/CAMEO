@@ -1,0 +1,311 @@
+.prompt-input-container {
+  position: relative;
+  margin-top: 300px; /* Add substantial top margin to move content down */
+}
+
+.textarea-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.prompt-textarea {
+  width: 100%;
+  min-height: 60px;
+  max-height: 200px;
+  padding: var(--space-3);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  resize: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.prompt-textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+  outline: none;
+}
+
+.prompt-textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+.prompt-textarea:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.generate-btn {
+  align-self: flex-end;
+  margin-top: var(--space-2);
+  background-color: var(--primary-color);
+  color: white;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 1rem;
+  transition: background-color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  border: none;
+}
+
+.generate-btn:hover:not(:disabled) {
+  background-color: var(--primary-dark);
+}
+
+.generate-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.generate-btn.video {
+  background-color: var(--secondary-color);
+}
+
+.generate-btn.video:hover:not(:disabled) {
+  background-color: var(--secondary-dark);
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s infinite linear;
+}
+
+.ad-prompts-section {
+  margin-top: var(--space-4);
+}
+
+.ad-prompts-section h3 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ad-prompts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-3);
+}
+
+.ad-prompt-card {
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  text-align: left;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.ad-prompt-card:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+  background-color: var(--background-tertiary);
+  box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+.ad-prompt-card:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ad-prompt-title {
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.ad-prompt-preview {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.button-group {
+  display: flex;
+  gap: var(--space-2);
+  align-self: flex-end;
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.image-section {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.preview-container {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.generate-btn, .upload-btn {
+  min-width: 140px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--border-color);
+}
+
+.upload-btn {
+  background-color: var(--background-secondary);
+  color: var(--text-primary);
+  gap: var(--space-1);
+  margin-top: 8px;
+}
+
+.upload-btn:hover:not(:disabled) {
+  background-color: var(--background-tertiary);
+  border-color: var(--primary-color);
+}
+
+.upload-btn .upload-icon {
+  font-size: 1rem;
+}
+
+.upload-btn.dark {
+  background-color: var(--background-tertiary);
+  border-color: var(--border-color);
+}
+
+.dark .preview-container {
+  border-color: var(--border-color);
+  background-color: var(--background-tertiary);
+}
+
+.video-section {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.duration-options {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.duration-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-right: var(--space-1);
+  font-weight: 500;
+}
+
+.duration-btn {
+  min-width: 40px;
+  height: 32px;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background-color: var(--background-secondary);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.duration-btn:hover {
+  border-color: var(--primary-color);
+  background-color: var(--background-primary);
+}
+
+.duration-btn.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.duration-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.duration-btn.dark {
+  border-color: var(--border-color-dark);
+  background-color: var(--background-secondary-dark);
+  color: var(--text-secondary-dark);
+}
+
+.duration-btn.dark:hover {
+  border-color: var(--primary-color);
+  background-color: var(--background-primary-dark);
+}
+
+.duration-btn.dark.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .prompt-textarea {
+    font-size: 0.9rem;
+  }
+  
+  .generate-btn {
+    font-size: 0.9rem;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .ad-prompts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ad-prompt-card {
+    padding: var(--space-2);
+  }
+}

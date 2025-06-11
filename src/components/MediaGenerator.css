@@ -1,0 +1,122 @@
+.media-generator {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.title-section {
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.title-section h1 {
+  color: var(--primary-color);
+  font-size: 3rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.title-section h2 {
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  margin: 0.5rem 0 0 0;
+  font-weight: 500;
+}
+
+.generation-type-toggle {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  margin-bottom: var(--space-3);
+}
+
+.toggle-btn {
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--border-color);
+  background: var(--background-secondary);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-weight: 500;
+}
+
+.toggle-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.toggle-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.media-display {
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-message {
+  background: var(--background-secondary);
+  border: 1px solid var(--error-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin: var(--space-3) 0;
+}
+
+.error-message pre {
+  margin: 0;
+  color: var(--error-color);
+  font-family: var(--font-family);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Dark mode styles */
+.media-generator.dark .toggle-btn {
+  background: var(--background-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.media-generator.dark .toggle-btn:hover {
+  border-color: var(--primary-light);
+  color: var(--primary-light);
+}
+
+.media-generator.dark .toggle-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.media-generator.dark .error-message {
+  background: var(--background-tertiary);
+  border-color: var(--error-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .media-generator {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+  
+  .generation-type-toggle {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .toggle-btn {
+    min-width: 150px;
+    text-align: center;
+  }
+}
