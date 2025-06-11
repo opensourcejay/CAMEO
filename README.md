@@ -43,13 +43,13 @@ Create a `.env` file in your project root:
 VITE_AZURE_IMAGE_ENDPOINT=your-azure-endpoint
 VITE_AZURE_IMAGE_MODEL=gpt-image-1  # or dall-e-3
 VITE_AZURE_IMAGE_API_KEY=your-api-key
-VITE_AZURE_IMAGE_API_VERSION=2025-04-01-preview
+VITE_AZURE_IMAGE_API_VERSION=your-api-version
 
 # Video Generation Setup
 VITE_AZURE_VIDEO_ENDPOINT=your-azure-endpoint
 VITE_AZURE_VIDEO_MODEL=sora
 VITE_AZURE_VIDEO_API_KEY=your-api-key
-VITE_AZURE_VIDEO_API_VERSION=preview
+VITE_AZURE_VIDEO_API_VERSION=your-api-version
    ```
 
 4. **Development**
