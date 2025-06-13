@@ -15,19 +15,14 @@ export async function generateVideo(prompt, duration = 5) {
   const endpoint = import.meta.env.VITE_AZURE_VIDEO_ENDPOINT;
   const model = import.meta.env.VITE_AZURE_VIDEO_MODEL;
   const apiVersion = import.meta.env.VITE_AZURE_VIDEO_API_VERSION;
-
-  // Validation to ensure we're using the correct video endpoint
-  if (!endpoint || !endpoint.includes('joshua-11111-resource')) {
-    throw new Error(`Video generation must use the correct video endpoint. Current: ${endpoint}`);
+  if (!endpoint || !apiKey) {
+    throw new Error('Video API configuration is missing');
   }
-  
-  if (!model || model !== 'sora') {
+    if (!model || model !== 'sora') {
     throw new Error(`Video generation must use sora model. Current: ${model}`);
   }
 
-  if (!endpoint || !apiKey) {
-    throw new Error('Video API configuration is missing');
-  }  try {    // Setup API URL - using v1 endpoint instead of deployments
+  try {    // Setup API URL - using v1 endpoint instead of deployments
     const baseUrl = new URL(endpoint).toString().replace(/\/?$/, '/');
     const apiUrl = `${baseUrl}openai/v1/video/generations/jobs?api-version=${apiVersion}`;
     
@@ -166,12 +161,6 @@ export async function generateImage(prompt) {
   const endpoint = import.meta.env.VITE_AZURE_IMAGE_ENDPOINT;
   const modelName = import.meta.env.VITE_AZURE_IMAGE_MODEL;
   const apiVersion = import.meta.env.VITE_AZURE_IMAGE_API_VERSION;
-
-  // Validation to ensure we're using the correct image endpoint
-  if (!endpoint || !endpoint.includes('joshu-mbfklkej-westus3')) {
-    throw new Error(`Image generation must use the correct image endpoint. Current: ${endpoint}`);
-  }
-  
   if (!modelName || modelName !== 'gpt-image-1') {
     throw new Error(`Image generation must use gpt-image-1 model. Current: ${modelName}`);
   }
@@ -271,12 +260,6 @@ export async function editImage(prompt, imageFile, maskFile = null) {  const api
   const endpoint = import.meta.env.VITE_AZURE_IMAGE_ENDPOINT;
   const modelName = import.meta.env.VITE_AZURE_IMAGE_MODEL;
   const apiVersion = import.meta.env.VITE_AZURE_IMAGE_API_VERSION;
-
-  // Validation to ensure we're using the correct image endpoint for editing
-  if (!endpoint || !endpoint.includes('joshu-mbfklkej-westus3')) {
-    throw new Error(`Image editing must use the correct image endpoint. Current: ${endpoint}`);
-  }
-  
   if (!modelName || modelName !== 'gpt-image-1') {
     throw new Error(`Image editing must use gpt-image-1 model. Current: ${modelName}`);
   }
