@@ -23,9 +23,18 @@
     --text-primary: #323130;
   --text-secondary: #605E5C;
   --text-tertiary: #A19F9D;
-  
-  --border-color: #E1E1E1;
+    --border-color: #E1E1E1;
   --shadow-color: rgba(0, 0, 0, 0.08);
+  
+  /* Settings component variables */
+  --card-bg: #FFFFFF;
+  --text-color: #323130;
+  --background-color: #F8F9FA;
+  --text-secondary: #605E5C;
+  --primary-color-rgb: 0, 120, 212;
+  --danger-color: #E81123;
+  --danger-hover: #C50E1F;
+  --primary-hover: #106EBE;
   
   /* Spacing system */
   --space-1: 4px;
@@ -62,6 +71,40 @@
   
   --border-color: #404040;
   --shadow-color: rgba(0, 0, 0, 0.3);
+  
+  /* Settings component variables for dark theme */
+  --card-bg: #2d2d2d;
+  --text-color: #ffffff;
+  --background-color: #1a1a1a;
+  --text-secondary: #e0e0e0;
+  --primary-color-rgb: 0, 120, 212;
+  --danger-color: #E81123;
+  --danger-hover: #C50E1F;
+  --primary-hover: #106EBE;
+}
+
+/* Light theme - explicitly defined to override dark theme */
+.light-theme {
+  --background-primary: #FFFFFF;
+  --background-secondary: #F8F9FA;
+  --background-tertiary: #F0F2F5;
+  
+  --text-primary: #323130;
+  --text-secondary: #605E5C;
+  --text-tertiary: #A19F9D;
+  
+  --border-color: #E1E1E1;
+  --shadow-color: rgba(0, 0, 0, 0.08);
+  
+  /* Settings component variables for light theme */
+  --card-bg: #FFFFFF;
+  --text-color: #323130;
+  --background-color: #F8F9FA;
+  --text-secondary: #605E5C;
+  --primary-color-rgb: 0, 120, 212;
+  --danger-color: #E81123;
+  --danger-hover: #C50E1F;
+  --primary-hover: #106EBE;
 }
 
 /* Global styles */
@@ -291,6 +334,32 @@ body {
   padding: var(--space-2);
   color: var(--text-tertiary);
   font-size: 0.8rem;
+}
+
+.settings-btn {
+  width: calc(100% - var(--space-4));
+  margin: 0 var(--space-2) var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.settings-btn:hover {
+  background: var(--primary-dark);
+}
+
+.footer-text {
+  margin-top: var(--space-2);
 }
 
 .sidebar-footer a {

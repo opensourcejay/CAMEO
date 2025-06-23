@@ -5,52 +5,139 @@ import { debugLog } from '../utils/debug';
  */
 
 /**
+ * Get API settings from localStorage
+ * @param {string} type - 'image' or 'video'
+ * @returns {Object} - Object containing apiKey and endpoint
+ */
+function getApiSettings(type) {
+  const settingsKey = type === 'image' ? 'azure_image_config' : 'azure_video_config';
+  const settings = localStorage.getItem(settingsKey);
+  
+  if (!settings) {
+    throw new Error(`${type.charAt(0).toUpperCase() + type.slice(1)} API settings not configured. Please go to Settings to configure your API credentials.`);
+  }
+  
+  try {
+    const parsed = JSON.parse(settings);
+    if (!parsed.apiKey || !parsed.endpoint) {
+      throw new Error(`${type.charAt(0).toUpperCase() + type.slice(1)} API settings incomplete. Please check your API key and endpoint in Settings.`);
+    }
+    return parsed;
+  } catch (error) {
+    throw new Error(`Invalid ${type} API settings. Please reconfigure in Settings.`);
+  }
+}
+
+/**
+ * Determine the correct authentication header based on the endpoint
+ * @param {string} endpoint - The API endpoint URL
+ * @returns {string} - The header name to use ('api-key' or 'Authorization')
+ */
+function getAuthHeaderName(endpoint) {
+  const url = endpoint.toLowerCase();
+  
+  // Azure Cognitive Services / Azure OpenAI Service uses 'api-key'
+  if (url.includes('cognitiveservices.azure.com') || url.includes('openai.azure.com')) {
+    return 'api-key';
+  }
+  
+  // Azure AI Foundry / Azure Machine Learning uses 'Authorization: Bearer'
+  if (url.includes('inference.ai.azure.com') || url.includes('ml.azure.com')) {
+    return 'Authorization';
+  }
+  
+  // Default to api-key for backward compatibility
+  return 'api-key';
+}
+
+/**
+ * Get authentication headers for API requests
+ * @param {string} apiKey - The API key
+ * @param {string} endpoint - The API endpoint URL
+ * @returns {Object} - Headers object with appropriate authentication
+ */
+function getAuthHeaders(apiKey, endpoint) {
+  const authHeaderName = getAuthHeaderName(endpoint);
+  
+  if (authHeaderName === 'Authorization') {
+    return {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    };
+  } else {
+    return {
+      'api-key': apiKey,
+      'Content-Type': 'application/json'
+    };
+  }
+}
+
+/**
  * Generate a video using Azure OpenAI's Sora API
  * @param {string} prompt - The text prompt for video generation
  * @param {number} duration - Duration in seconds (default: 5)
  * @returns {Promise<Object>} - Object containing videoUrl
  */
 export async function generateVideo(prompt, duration = 5) {
-  const apiKey = import.meta.env.VITE_AZURE_VIDEO_API_KEY;
-  const endpoint = import.meta.env.VITE_AZURE_VIDEO_ENDPOINT;
-  const model = import.meta.env.VITE_AZURE_VIDEO_MODEL;
-  const apiVersion = import.meta.env.VITE_AZURE_VIDEO_API_VERSION;
-  if (!endpoint || !apiKey) {
-    throw new Error('Video API configuration is missing');
-  }
-    if (!model || model !== 'sora') {
-    throw new Error(`Video generation must use sora model. Current: ${model}`);
-  }
-
-  try {    // Setup API URL - using v1 endpoint instead of deployments
-    const baseUrl = new URL(endpoint).toString().replace(/\/?$/, '/');
-    const apiUrl = `${baseUrl}openai/v1/video/generations/jobs?api-version=${apiVersion}`;
+  const { apiKey, endpoint } = getApiSettings('video');
+  try {    // Use the endpoint directly if it's already a complete URL with path and query params
+    let apiUrl;
+    if (endpoint.includes('/video/generations/jobs') && endpoint.includes('?api-version=')) {
+      // Complete Azure OpenAI endpoint URL provided with API version
+      apiUrl = endpoint;
+    } else if (endpoint.includes('/video/generations') && endpoint.includes('?api-version=')) {
+      // Complete endpoint URL provided with API version
+      apiUrl = endpoint;
+    } else if (endpoint.includes('/video/generations') || endpoint.includes('/v1/video/generations')) {
+      // Complete endpoint URL provided
+      apiUrl = endpoint;} else {
+      // Base endpoint provided, construct the URL
+      const baseUrl = endpoint.replace(/\/$/, ''); // Remove trailing slash
+      
+      if (endpoint.includes('inference.ai.azure.com')) {
+        // Azure AI Foundry endpoint
+        apiUrl = `${baseUrl}/v1/video/generations`;
+      } else if (endpoint.includes('/openai/')) {
+        // Azure OpenAI Service endpoint that already contains /openai/ path
+        const apiVersion = '2024-10-01-preview';
+        apiUrl = `${baseUrl}/v1/video/generations/jobs?api-version=${apiVersion}`;
+      } else {
+        // Azure OpenAI Service endpoint without /openai/ path
+        const apiVersion = '2024-10-01-preview';
+        apiUrl = `${baseUrl}/openai/v1/video/generations/jobs?api-version=${apiVersion}`;
+      }
+    }
     
-    debugLog('Video Request URL:', apiUrl);debugLog('Video Request Config:', {
+    debugLog('Video Request URL:', apiUrl);
+    
+    const headers = getAuthHeaders(apiKey, endpoint);
+    debugLog('Video Request Config:', {
       endpoint,
-      model,
-      apiVersion,
-      baseUrl,
       fullApiUrl: apiUrl,
       headers: {
-        'Content-Type': 'application/json',
-        'api-key': apiKey ? `${apiKey.substring(0, 8)}...` : 'missing'
+        ...headers,
+        [getAuthHeaderName(endpoint) === 'api-key' ? 'api-key' : 'Authorization']: 
+          getAuthHeaderName(endpoint) === 'api-key' ? 
+            `${apiKey.substring(0, 8)}...` : 
+            `Bearer ${apiKey.substring(0, 8)}...`
       }
-    });// Submit video generation request
+    });
+
+    // Submit video generation request
     const submitResponse = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': apiKey
-      },      body: JSON.stringify({
-        model: model,
+      headers,
+      body: JSON.stringify({
+        model: 'sora',
         prompt: prompt,
         n_seconds: duration,
         n_variants: 1,
         height: 1080,
         width: 1920
       })
-    });    if (!submitResponse.ok) {
+    });
+
+    if (!submitResponse.ok) {
       const errorData = await submitResponse.json().catch(() => ({}));
       debugLog('Video API Error Response:', {
         status: submitResponse.status,
@@ -60,7 +147,8 @@ export async function generateVideo(prompt, duration = 5) {
       });
       
       let errorMessage = '';
-      switch (submitResponse.status) {        case 404:
+      switch (submitResponse.status) {
+        case 404:
           errorMessage = `Video API endpoint not found at '${endpoint}'. Please verify the Sora API is available and the endpoint is correct.`;
           break;
         case 401:
@@ -73,20 +161,50 @@ export async function generateVideo(prompt, duration = 5) {
           errorMessage = 'Rate limit exceeded for video generation. Please wait and try again.';
           break;
         default:
-          errorMessage = errorData.error?.message || `Video API error: ${submitResponse.statusText}`;      }
+          errorMessage = errorData.error?.message || `Video API error: ${submitResponse.statusText}`;
+      }
       throw new Error(errorMessage);
     }
 
     const responseData = await submitResponse.json();
-    debugLog('Initial Sora API Response:', responseData);    if (!responseData?.id) {
+    debugLog('Initial Sora API Response:', responseData);
+
+    if (!responseData?.id) {
       throw new Error('No video generation job ID in response');
-    }    // Poll for completion - using v1 endpoint instead of deployments
-    const statusUrl = `${baseUrl}openai/v1/video/generations/jobs/${responseData.id}?api-version=${apiVersion}`;
+    }    // Poll for completion - construct status URL based on the original endpoint structure
+    const authHeaders = getAuthHeaders(apiKey, endpoint);
+    let statusUrl;
+    
+    if (endpoint.includes('/video/generations/jobs') && endpoint.includes('?api-version=')) {
+      // Complete Azure OpenAI endpoint URL - just replace the path
+      statusUrl = endpoint.replace('/video/generations/jobs?', `/video/generations/jobs/${responseData.id}?`);
+    } else if (endpoint.includes('/video/generations') && endpoint.includes('?')) {
+      // Complete endpoint URL - derive status URL from it
+      const baseEndpoint = endpoint.split('/video/generations')[0];
+      if (endpoint.includes('inference.ai.azure.com')) {
+        statusUrl = `${baseEndpoint}/v1/video/generations/${responseData.id}`;
+      } else {
+        statusUrl = `${baseEndpoint}/openai/v1/video/generations/jobs/${responseData.id}?api-version=2024-10-01-preview`;
+      }
+    } else {
+      // Base endpoint - construct status URL
+      const baseUrl = endpoint.replace(/\/$/, ''); // Remove trailing slash
+      if (endpoint.includes('inference.ai.azure.com')) {
+        statusUrl = `${baseUrl}/v1/video/generations/${responseData.id}`;
+      } else if (endpoint.includes('/openai/v1/')) {
+        // Azure OpenAI Service endpoint that already contains /openai/v1/ path
+        statusUrl = `${baseUrl}/video/generations/jobs/${responseData.id}?api-version=2024-10-01-preview`;
+      } else {
+        // Azure OpenAI Service endpoint without /openai/v1/ path
+        statusUrl = `${baseUrl}/openai/v1/video/generations/jobs/${responseData.id}?api-version=2024-10-01-preview`;
+      }
+    }
+      
     for (let i = 0; i < 120; i++) {
       await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds between checks
 
       const statusResponse = await fetch(statusUrl, {
-        headers: { 'api-key': apiKey }
+        headers: authHeaders
       });
 
       if (!statusResponse.ok) {
@@ -120,15 +238,39 @@ export async function generateVideo(prompt, duration = 5) {
         // Get the generation ID from the succeeded response
         const generationId = generation.id;
         if (!generationId) {
-          throw new Error('No generation ID found in the response');        }        // Get video content - using v1 endpoint instead of deployments
-        const videoUrl = `${baseUrl}openai/v1/video/generations/${generationId}/content/video?api-version=${apiVersion}`;
+          throw new Error('No generation ID found in the response');
+        }        // Get video content - construct content URL based on the original endpoint structure
+        let videoUrl;
+        if (endpoint.includes('/video/generations/jobs') && endpoint.includes('?api-version=')) {
+          // Complete Azure OpenAI endpoint URL - replace path with content path
+          videoUrl = endpoint.replace('/video/generations/jobs?', `/video/generations/${generationId}/content/video?`);
+        } else if (endpoint.includes('/video/generations') && endpoint.includes('?')) {
+          // Complete endpoint URL - derive content URL from it
+          const baseEndpoint = endpoint.split('/video/generations')[0];
+          if (endpoint.includes('inference.ai.azure.com')) {
+            videoUrl = `${baseEndpoint}/v1/video/generations/${generationId}/content`;
+          } else {
+            videoUrl = `${baseEndpoint}/openai/v1/video/generations/${generationId}/content/video?api-version=2024-10-01-preview`;
+          }
+        } else {
+          // Base endpoint - construct content URL
+          const baseUrl = new URL(endpoint).toString().replace(/\/?$/, '/');
+          if (endpoint.includes('inference.ai.azure.com')) {
+            videoUrl = `${baseUrl}v1/video/generations/${generationId}/content`;
+          } else if (endpoint.includes('/openai/v1/')) {
+            // Azure OpenAI Service endpoint that already contains /openai/v1/ path
+            videoUrl = `${baseUrl}video/generations/${generationId}/content/video?api-version=2024-10-01-preview`;
+          } else {
+            // Azure OpenAI Service endpoint without /openai/v1/ path
+            videoUrl = `${baseUrl}openai/v1/video/generations/${generationId}/content/video?api-version=2024-10-01-preview`;
+          }
+        }
+        
         debugLog('Video content URL:', videoUrl);
 
         // Make a fetch request to get the actual video data
         const videoResponse = await fetch(videoUrl, {
-          headers: {
-            'api-key': apiKey
-          }
+          headers: authHeaders
         });
 
         if (!videoResponse.ok) {
@@ -157,37 +299,66 @@ export async function generateVideo(prompt, duration = 5) {
  * @returns {Promise<Object>} - Object containing imageUrl
  */
 export async function generateImage(prompt) {
-  const apiKey = import.meta.env.VITE_AZURE_IMAGE_API_KEY;
-  const endpoint = import.meta.env.VITE_AZURE_IMAGE_ENDPOINT;
-  const modelName = import.meta.env.VITE_AZURE_IMAGE_MODEL;
-  const apiVersion = import.meta.env.VITE_AZURE_IMAGE_API_VERSION;
-  if (!modelName || modelName !== 'gpt-image-1') {
-    throw new Error(`Image generation must use gpt-image-1 model. Current: ${modelName}`);
-  }
+  const { apiKey, endpoint } = getApiSettings('image');
 
   debugLog('Image Configuration:', {
     endpoint,
-    modelName,
-    apiVersion,
     apiKeyLength: apiKey?.length || 0
   });
 
+  debugLog('URL Detection Debug:', {
+    endpoint,
+    includesImagesGenerations: endpoint.includes('/images/generations'),
+    includesApiVersion: endpoint.includes('?api-version='),
+    bothConditions: endpoint.includes('/images/generations') && endpoint.includes('?api-version=')
+  });
   try {
-    if (!endpoint || !apiKey) {
-      throw new Error('Image API configuration is missing');
-    }
-
-    const baseUrl = new URL(endpoint).toString().replace(/\/?$/, '/');
-    const apiUrl = `${baseUrl}openai/deployments/${modelName}/images/generations?api-version=${apiVersion}`;
+    // Check if this is a complete API endpoint URL
+    let apiUrl;
     
-    debugLog('Image Request URL:', apiUrl);
+    // If the endpoint contains the full path and API version, use it directly
+    if (endpoint.includes('/openai/deployments/') && endpoint.includes('/images/generations') && endpoint.includes('api-version=')) {
+      console.log('✅ Using complete Azure OpenAI endpoint directly:', endpoint);
+      apiUrl = endpoint;
+    }
+    // If it contains the foundry-style path, use it directly
+    else if (endpoint.includes('/v1/images/generations')) {
+      console.log('✅ Using complete AI Foundry endpoint directly:', endpoint);
+      apiUrl = endpoint;
+    }
+    // If it just contains the generic path, use it directly
+    else if (endpoint.includes('/images/generations')) {
+      console.log('✅ Using complete endpoint with generic path directly:', endpoint);
+      apiUrl = endpoint;
+    }
+    // Otherwise, treat it as a base URL and construct the full endpoint
+    else {
+      console.log('🔧 Constructing URL from base endpoint:', endpoint);
+      const baseUrl = new URL(endpoint).toString().replace(/\/?$/, '/');
+      
+      if (endpoint.includes('inference.ai.azure.com')) {
+        // Azure AI Foundry endpoint
+        apiUrl = `${baseUrl}v1/images/generations`;
+      } else {
+        // Azure OpenAI Service endpoint
+        const apiVersion = '2024-10-01-preview';
+        apiUrl = `${baseUrl}openai/deployments/gpt-image-1/images/generations?api-version=${apiVersion}`;
+      }
+    }
+      console.log('🎯 Final API URL being used:', apiUrl);
+    console.log('🔑 Auth header type:', getAuthHeaderName(endpoint));
+    console.log('🔑 API key length:', apiKey?.length);
+    console.log('🔑 API key first 8 chars:', apiKey?.substring(0, 8));
+
+    const headers = getAuthHeaders(apiKey, endpoint);
+    console.log('📋 Request headers:', {
+      ...headers,
+      [getAuthHeaderName(endpoint)]: headers['api-key'] ? `${headers['api-key'].substring(0, 8)}...` : headers['Authorization']?.substring(0, 20) + '...'
+    });
 
     const submitResponse = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'api-key': apiKey
-      },
+      headers,
       body: JSON.stringify({
         prompt: prompt,
         n: 1,
@@ -256,26 +427,40 @@ async function fileToBase64(file) {
  * @param {File} [maskFile] - Optional mask file for selective editing
  * @returns {Promise<Object>} - Object containing imageUrl
  */
-export async function editImage(prompt, imageFile, maskFile = null) {  const apiKey = import.meta.env.VITE_AZURE_IMAGE_API_KEY;
-  const endpoint = import.meta.env.VITE_AZURE_IMAGE_ENDPOINT;
-  const modelName = import.meta.env.VITE_AZURE_IMAGE_MODEL;
-  const apiVersion = import.meta.env.VITE_AZURE_IMAGE_API_VERSION;
-  if (!modelName || modelName !== 'gpt-image-1') {
-    throw new Error(`Image editing must use gpt-image-1 model. Current: ${modelName}`);
-  }
+export async function editImage(prompt, imageFile, maskFile = null) {
+  const { apiKey, endpoint } = getApiSettings('image');
 
   debugLog('Edit Configuration:', {
     endpoint,
-    modelName,
-    apiVersion,
     apiKeyLength: apiKey?.length || 0,
     hasImage: !!imageFile,
     hasMask: !!maskFile
   });
-
   try {
-    const baseUrl = new URL(endpoint).toString().replace(/\/?$/, '/');
-    const apiUrl = `${baseUrl}openai/deployments/${modelName}/images/edits?api-version=${apiVersion}`;
+    // Use the endpoint directly if it's already a complete URL with path and query params
+    let apiUrl;
+    if (endpoint.includes('/images/edits') && endpoint.includes('?api-version=')) {
+      // Complete endpoint URL provided with API version
+      apiUrl = endpoint;
+    } else if (endpoint.includes('/images/edits') || endpoint.includes('/v1/images/edits')) {
+      // Complete endpoint URL provided
+      apiUrl = endpoint;
+    } else if (endpoint.includes('/images/generations')) {
+      // Convert generations endpoint to edits endpoint
+      apiUrl = endpoint.replace('/images/generations', '/images/edits');
+    } else {
+      // Base endpoint provided, construct the URL
+      const baseUrl = new URL(endpoint).toString().replace(/\/?$/, '/');
+      
+      if (endpoint.includes('inference.ai.azure.com')) {
+        // Azure AI Foundry endpoint
+        apiUrl = `${baseUrl}v1/images/edits`;
+      } else {
+        // Azure OpenAI Service endpoint
+        const apiVersion = '2024-10-01-preview'; // Latest API version
+        apiUrl = `${baseUrl}openai/deployments/gpt-image-1/images/edits?api-version=${apiVersion}`;
+      }
+    }
     
     const formData = new FormData();
     formData.append('prompt', prompt);
@@ -289,11 +474,18 @@ export async function editImage(prompt, imageFile, maskFile = null) {  const api
 
     debugLog('Edit Request URL:', apiUrl);
 
+    // Get headers without Content-Type for FormData
+    const authHeaderName = getAuthHeaderName(endpoint);
+    const headers = {};
+    if (authHeaderName === 'Authorization') {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    } else {
+      headers['api-key'] = apiKey;
+    }
+
     const submitResponse = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'api-key': apiKey
-      },
+      headers,
       body: formData
     });
 

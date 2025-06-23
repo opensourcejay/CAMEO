@@ -36,26 +36,20 @@ npm install
 
 ### Configuration
 
-Create a `.env` file in your project root:
+No environment variables are required! All configuration is done through the Settings UI:
 
-```env
-# Image Generation Setup
-VITE_AZURE_IMAGE_ENDPOINT=your-azure-endpoint
-VITE_AZURE_IMAGE_MODEL=gpt-image-1  # or dall-e-3
-VITE_AZURE_IMAGE_API_KEY=your-api-key
-VITE_AZURE_IMAGE_API_VERSION=your-api-version
-
-# Video Generation Setup
-VITE_AZURE_VIDEO_ENDPOINT=your-azure-endpoint
-VITE_AZURE_VIDEO_MODEL=sora
-VITE_AZURE_VIDEO_API_KEY=your-api-key
-VITE_AZURE_VIDEO_API_VERSION=your-api-version
-   ```
-
-4. **Development**
+1. **Start the application**
    ```bash
    npm run dev
    ```
+
+2. **Configure API Settings**
+   - Click the "⚙️ Settings" button in the sidebar
+   - Enter your Azure OpenAI endpoint URLs and API keys
+   - Configure both Image Generation and Video Generation tabs
+   - Save your settings
+
+Your API credentials are stored securely in your browser's localStorage.
 
 ## Project Structure
 
@@ -68,22 +62,19 @@ cameo/
 │   │   ├── MediaGenerator.jsx  # Main media generation component
 │   │   ├── ImageUpload.jsx     # Image upload handling
 │   │   ├── PromptInput.jsx     # Prompt input with duration controls
+│   │   ├── Settings.jsx        # Settings modal for API configuration
 │   │   └── styles/            # Component CSS files
 │   │
 │   ├── services/       # API and service integrations
 │   │   └── apiService.js    # Azure OpenAI API integration
 │   │
-│   ├── hooks/         # Custom React hooks
-│   │   └── useLocalStorage.js  # Local storage management
-│   │
 │   ├── utils/         # Utility functions
 │   │   └── debug.js        # Debug logging
 │   │
-│   ├── App.jsx         # Root component
+│   ├── App.jsx         # Root component with theme and history management
 │   └── main.jsx        # Entry point
 │
 ├── public/            # Static assets
-├── .env              # Environment configuration
 └── package.json      # Project dependencies
 ```
 
@@ -140,11 +131,10 @@ cameo/
    - Set up your resource group
    - Note your endpoint and API key
 
-2. **Deploy Models**
-   - Deploy through Azure Foundry interface
+2. **Deploy Models**   - Deploy through Azure Foundry interface
    - Configure GPT-Image-1 or DALL-E-3 for images
    - Set up SORA for video generation
-   - Save deployment names for your .env file
+   - Note deployment endpoints for the Settings UI
 
 ## 🚀 Model Guide
 

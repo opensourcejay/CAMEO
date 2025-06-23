@@ -77,13 +77,15 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
     console.error('Generation error:', err);
     
     const requestIdMatch = err.message.match(/request ID ([a-f0-9-]+)/i);
-    const requestId = requestIdMatch ? requestIdMatch[1] : 'unknown';
-
-    let endpointInfo = '';
+    const requestId = requestIdMatch ? requestIdMatch[1] : 'unknown';    let endpointInfo = '';
     if (type === 'video') {
-      endpointInfo = `\nVideo Endpoint: ${import.meta.env.VITE_AZURE_VIDEO_ENDPOINT}\nVideo Model: ${import.meta.env.VITE_AZURE_VIDEO_MODEL}`;
+      const videoConfig = localStorage.getItem('azure_video_config');
+      const config = videoConfig ? JSON.parse(videoConfig) : {};
+      endpointInfo = `\nVideo Endpoint: ${config.endpoint || 'Not configured'}\nVideo Model: sora`;
     } else {
-      endpointInfo = `\nImage Endpoint: ${import.meta.env.VITE_AZURE_IMAGE_ENDPOINT}\nImage Model: ${import.meta.env.VITE_AZURE_IMAGE_MODEL}`;
+      const imageConfig = localStorage.getItem('azure_image_config');
+      const config = imageConfig ? JSON.parse(imageConfig) : {};
+      endpointInfo = `\nImage Endpoint: ${config.endpoint || 'Not configured'}\nImage Model: gpt-image-1`;
     }
 
     const errorMessage = 

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import MediaGenerator from './components/MediaGenerator'
+import Settings from './components/Settings'
 import './App.css'
 
-function App() {  const [darkMode, setDarkMode] = useState(() => {
+function App() {
+  const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
       return savedTheme === 'dark';
@@ -13,8 +15,7 @@ function App() {  const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('mediaHistory');
     return saved ? JSON.parse(saved) : [];
   });
-
-  const [enlargedImage, setEnlargedImage] = useState(null);
+  const [enlargedImage, setEnlargedImage] = useState(null);  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     document.body.className = darkMode ? 'dark-theme' : 'light-theme';
@@ -65,17 +66,9 @@ function App() {  const [darkMode, setDarkMode] = useState(() => {
             onMediaGenerated={addToHistory}
           />
         </main>
-        <aside className="history-sidebar">
-          <div className="history-header">
+        <aside className="history-sidebar">          <div className="history-header">
             <h2>Generation History</h2>
             <div className="header-actions">
-              <button 
-                className="theme-toggle-btn"
-                onClick={toggleTheme}
-                title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              >
-                {darkMode ? '☀️' : '🌙'}
-              </button>
               {history.length > 0 && (
                 <button className="clear-history" onClick={clearHistory}>
                   Clear All
@@ -129,9 +122,17 @@ function App() {  const [darkMode, setDarkMode] = useState(() => {
             <div className="history-empty">
               <p>No media generated yet</p>
             </div>
-          )}
-          <div className="sidebar-footer">
-            Created by <a href="https://github.com/opensourcejay" target="_blank" rel="noopener noreferrer">@opensourcejay</a>
+          )}          <div className="sidebar-footer">
+            <button 
+              className="settings-btn"
+              onClick={() => setSettingsOpen(true)}
+              title="Settings"
+            >
+              ⚙️ Settings
+            </button>
+            <div className="footer-text">
+              Created by <a href="https://github.com/opensourcejay" target="_blank" rel="noopener noreferrer">@opensourcejay</a>
+            </div>
           </div>
         </aside>{enlargedImage && (
           <div className="enlarged-view" onClick={() => setEnlargedImage(null)}>
@@ -148,10 +149,14 @@ function App() {  const [darkMode, setDarkMode] = useState(() => {
                 src={enlargedImage.imageUrl} 
                 alt={enlargedImage.prompt}
               />
-            )}
-            <p className="enlarged-prompt">{enlargedImage.prompt}</p>
+            )}            <p className="enlarged-prompt">{enlargedImage.prompt}</p>
           </div>
-        )}
+        )}        <Settings 
+          isOpen={settingsOpen} 
+          onClose={() => setSettingsOpen(false)}
+          darkMode={darkMode}
+          onToggleTheme={toggleTheme}
+        />
       </div>
   )
 }
