@@ -6,21 +6,22 @@ import './App.css'
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      return savedTheme === 'dark';
-    }
-    return false; // Default to light mode
+    return savedTheme ? savedTheme === 'dark' : false;
   });
+  
   const [history, setHistory] = useState(() => {
     const saved = localStorage.getItem('mediaHistory');
     return saved ? JSON.parse(saved) : [];
   });
-  const [enlargedImage, setEnlargedImage] = useState(null);  const [settingsOpen, setSettingsOpen] = useState(false);
+  
+  const [enlargedImage, setEnlargedImage] = useState(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     document.body.className = darkMode ? 'dark-theme' : 'light-theme';
     localStorage.setItem('theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
+
   useEffect(() => {
     localStorage.setItem('mediaHistory', JSON.stringify(history));
   }, [history]);
@@ -28,13 +29,14 @@ function App() {
   const toggleTheme = () => {
     setDarkMode(!darkMode);
   };
+
   const addToHistory = (media) => {
     setHistory(prev => [media, ...prev]);
   };
+
   const clearHistory = () => {
     if (window.confirm('Are you sure you want to clear all images? This cannot be undone.')) {
       setHistory([]);
-      // Clear all items in localStorage except theme preference
       const savedTheme = localStorage.getItem('theme');
       localStorage.clear();
       if (savedTheme) {

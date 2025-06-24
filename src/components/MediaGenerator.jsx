@@ -4,12 +4,16 @@ import PromptInput from './PromptInput';
 import ImageDisplay from './ImageDisplay';
 import VideoDisplay from './VideoDisplay';
 import ImageUpload from './ImageUpload';
+import ConfigWarningModal from './ConfigWarningModal';
 import './MediaGenerator.css';
 
 function MediaGenerator({ darkMode, toggleTheme, onMediaGenerated }) {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState(null);  const [currentMedia, setCurrentMedia] = useState(null);
+  const [error, setError] = useState(null);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [configModalMessage, setConfigModalMessage] = useState('');
+  const [currentMedia, setCurrentMedia] = useState(null);
   const [referenceImage, setReferenceImage] = useState(null);
   const [shouldResetUploads, setShouldResetUploads] = useState(false);
   const [generationType, setGenerationType] = useState('image');
@@ -71,49 +75,59 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
         type: 'image'
       };      setCurrentMedia(newImageItem);
       onMediaGenerated(newImageItem);
-    }
-
-  } catch (err) {
+    }  } catch (err) {
     console.error('Generation error:', err);
     
-    const requestIdMatch = err.message.match(/request ID ([a-f0-9-]+)/i);
-    const requestId = requestIdMatch ? requestIdMatch[1] : 'unknown';    let endpointInfo = '';
-    if (type === 'video') {
-      const videoConfig = localStorage.getItem('azure_video_config');
-      const config = videoConfig ? JSON.parse(videoConfig) : {};
-      endpointInfo = `\nVideo Endpoint: ${config.endpoint || 'Not configured'}\nVideo Model: sora`;
+    // Check if this is a configuration error
+    if (err.message.includes('API settings not configured') || 
+        err.message.includes('API settings incomplete') || 
+        err.message.includes('Invalid') && err.message.includes('API settings')) {
+      // Show modal for configuration errors
+      setConfigModalMessage(err.message);
+      setShowConfigModal(true);
+      setError(null); // Clear any existing error message
     } else {
-      const imageConfig = localStorage.getItem('azure_image_config');
-      const config = imageConfig ? JSON.parse(imageConfig) : {};
-      endpointInfo = `\nImage Endpoint: ${config.endpoint || 'Not configured'}\nImage Model: gpt-image-1`;
+      // Show detailed error for other issues
+      const requestIdMatch = err.message.match(/request ID ([a-f0-9-]+)/i);
+      const requestId = requestIdMatch ? requestIdMatch[1] : 'unknown';
+
+      let endpointInfo = '';
+      if (type === 'video') {
+        const videoConfig = localStorage.getItem('azure_video_config');
+        const config = videoConfig ? JSON.parse(videoConfig) : {};
+        endpointInfo = `\nVideo Endpoint: ${config.endpoint || 'Not configured'}\nVideo Model: sora`;
+      } else {
+        const imageConfig = localStorage.getItem('azure_image_config');
+        const config = imageConfig ? JSON.parse(imageConfig) : {};
+        endpointInfo = `\nImage Endpoint: ${config.endpoint || 'Not configured'}\nImage Model: gpt-image-1`;
+      }
+
+      const errorMessage = 
+        `Azure OpenAI Service Error (Request ID: ${requestId})${endpointInfo}\n\n` +
+        `Error: ${err.message}\n\n` +
+        'Please try the following troubleshooting steps:\n\n' +
+        '1. Check Azure OpenAI Service Status:\n' +
+        '   • Visit the Azure status page\n' +
+        '   • Verify service availability in your region\n\n' +
+        '2. Verify Your Configuration:\n' +
+        '   • Confirm API key is valid and not expired\n' +
+        '   • Check if model deployment is active\n' +
+        '   • Verify resource group quotas\n' +
+        '   • Ensure network/firewall allows Azure OpenAI access\n\n' +
+        '3. Try Alternative Solutions:\n' +
+        '   • Use a different prompt\n' +
+        '   • Try another model deployment\n' +
+        '   • Check if prompt violates content policy\n\n' +
+        '4. If issues persist:\n' +
+        '   • Contact support at oai-assistants@microsoft.com\n' +
+        '   • Include this Request ID in your email\n';
+
+      setError(errorMessage);
     }
-
-    const errorMessage = 
-      `Azure OpenAI Service Error (Request ID: ${requestId})${endpointInfo}\n\n` +
-      `Error: ${err.message}\n\n` +
-      'Please try the following troubleshooting steps:\n\n' +
-      '1. Check Azure OpenAI Service Status:\n' +
-      '   • Visit the Azure status page\n' +
-      '   • Verify service availability in your region\n\n' +
-      '2. Verify Your Configuration:\n' +
-      '   • Confirm API key is valid and not expired\n' +
-      '   • Check if model deployment is active\n' +
-      '   • Verify resource group quotas\n' +
-      '   • Ensure network/firewall allows Azure OpenAI access\n\n' +
-      '3. Try Alternative Solutions:\n' +
-      '   • Use a different prompt\n' +
-      '   • Try another model deployment\n' +
-      '   • Check if prompt violates content policy\n\n' +
-      '4. If issues persist:\n' +
-      '   • Contact support at oai-assistants@microsoft.com\n' +
-      '   • Include this Request ID in your email\n';
-
-    setError(errorMessage);
   } finally {
     setIsGenerating(false);
   }
 };
-
   return (
     <div className={`media-generator ${darkMode ? 'dark' : 'light'}`}>
       <div className="title-section">
@@ -178,6 +192,12 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
           <pre>{error}</pre>
         </div>
       )}
+
+      <ConfigWarningModal 
+        isOpen={showConfigModal}
+        onClose={() => setShowConfigModal(false)}
+        message={configModalMessage}
+      />
     </div>
   );
 }

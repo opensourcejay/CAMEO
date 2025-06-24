@@ -15,17 +15,30 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
   const [activeTab, setActiveTab] = useState('image');
   const [showKeys, setShowKeys] = useState(false);
 
-  // Load saved settings on component mount
   useEffect(() => {
     const savedImageConfig = localStorage.getItem('azure_image_config');
     const savedVideoConfig = localStorage.getItem('azure_video_config');
 
     if (savedImageConfig) {
-      setImageConfig(JSON.parse(savedImageConfig));
+      try {
+        const parsed = JSON.parse(savedImageConfig);
+        if (parsed.apiKey && parsed.endpoint) {
+          setImageConfig(parsed);
+        }
+      } catch (e) {
+        console.error('Failed to parse saved image config');
+      }
     }
 
     if (savedVideoConfig) {
-      setVideoConfig(JSON.parse(savedVideoConfig));
+      try {
+        const parsed = JSON.parse(savedVideoConfig);
+        if (parsed.apiKey && parsed.endpoint) {
+          setVideoConfig(parsed);
+        }
+      } catch (e) {
+        console.error('Failed to parse saved video config');
+      }
     }
   }, []);
 
@@ -42,9 +55,7 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
       [field]: value
     }));
   };
-
   const saveSettings = () => {
-    // Validate required fields
     if (activeTab === 'image') {
       if (!imageConfig.apiKey || !imageConfig.endpoint) {
         alert('Please fill in both API Key and Endpoint for image generation.');
@@ -58,29 +69,16 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
       }
       localStorage.setItem('azure_video_config', JSON.stringify(videoConfig));
     }
-
     alert('Settings saved successfully!');
+    onClose();
   };
+
   const clearData = () => {
-    if (window.confirm('Are you sure you want to clear all data? This will clear:\n\n• All API settings\n• Generation history\n• Theme preferences\n• All cached data\n• All localStorage data\n\nThis action cannot be undone.')) {
-      // Clear all localStorage
-      localStorage.clear();
-      
-      // Clear any session storage as well
-      sessionStorage.clear();
-      
-      // Reset component state
-      setImageConfig({ endpoint: '', apiKey: '' });
-      setVideoConfig({ endpoint: '', apiKey: '' });
-      
-      // Reset to default theme
-      document.body.className = 'light-theme';
-      
-      alert('All data cleared successfully! The page will reload.');
-      
-      // Reload the page to reset everything
-      window.location.reload();
-    }
+    localStorage.clear();
+    setImageConfig({ endpoint: '', apiKey: '' });
+    setVideoConfig({ endpoint: '', apiKey: '' });
+    alert('Data Cleared successfully!');
+    onClose();
   };
 
   if (!isOpen) return null;

@@ -1,5 +1,3 @@
-import { debugLog } from '../utils/debug';
-
 /**
  * Service for interacting with the Azure OpenAI API (GPT-4V image generation and Sora video generation)
  */
@@ -106,24 +104,9 @@ export async function generateVideo(prompt, duration = 5) {
         const apiVersion = '2024-10-01-preview';
         apiUrl = `${baseUrl}/openai/v1/video/generations/jobs?api-version=${apiVersion}`;
       }
-    }
-    
-    debugLog('Video Request URL:', apiUrl);
-    
-    const headers = getAuthHeaders(apiKey, endpoint);
-    debugLog('Video Request Config:', {
-      endpoint,
-      fullApiUrl: apiUrl,
-      headers: {
-        ...headers,
-        [getAuthHeaderName(endpoint) === 'api-key' ? 'api-key' : 'Authorization']: 
-          getAuthHeaderName(endpoint) === 'api-key' ? 
-            `${apiKey.substring(0, 8)}...` : 
-            `Bearer ${apiKey.substring(0, 8)}...`
-      }
-    });
-
-    // Submit video generation request
+    }    
+    const headers = getAuthHeaders(apiKey, endpoint);    // Submit video generation request
+    console.log('🎬 Starting video generation...', { prompt, duration, endpoint: apiUrl });
     const submitResponse = await fetch(apiUrl, {
       method: 'POST',
       headers,
@@ -135,16 +118,8 @@ export async function generateVideo(prompt, duration = 5) {
         height: 1080,
         width: 1920
       })
-    });
-
-    if (!submitResponse.ok) {
+    });if (!submitResponse.ok) {
       const errorData = await submitResponse.json().catch(() => ({}));
-      debugLog('Video API Error Response:', {
-        status: submitResponse.status,
-        statusText: submitResponse.statusText,
-        errorData,
-        url: apiUrl
-      });
       
       let errorMessage = '';
       switch (submitResponse.status) {
@@ -164,14 +139,13 @@ export async function generateVideo(prompt, duration = 5) {
           errorMessage = errorData.error?.message || `Video API error: ${submitResponse.statusText}`;
       }
       throw new Error(errorMessage);
-    }
-
-    const responseData = await submitResponse.json();
-    debugLog('Initial Sora API Response:', responseData);
+    }    const responseData = await submitResponse.json();
 
     if (!responseData?.id) {
       throw new Error('No video generation job ID in response');
-    }    // Poll for completion - construct status URL based on the original endpoint structure
+    }
+
+    console.log('✅ Video generation job submitted successfully', { jobId: responseData.id });// Poll for completion - construct status URL based on the original endpoint structure
     const authHeaders = getAuthHeaders(apiKey, endpoint);
     let statusUrl;
     
@@ -197,11 +171,14 @@ export async function generateVideo(prompt, duration = 5) {
       } else {
         // Azure OpenAI Service endpoint without /openai/v1/ path
         statusUrl = `${baseUrl}/openai/v1/video/generations/jobs/${responseData.id}?api-version=2024-10-01-preview`;
-      }
-    }
+      }    }
       
+    console.log('⏳ Polling for video generation completion...');
     for (let i = 0; i < 120; i++) {
-      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds between checks
+      const waitTime = 5000; // 5 seconds
+      console.log(`🔄 Checking video generation status (attempt ${i + 1}/120)...`);
+      
+      await new Promise(resolve => setTimeout(resolve, waitTime)); // Wait 5 seconds between checks
 
       const statusResponse = await fetch(statusUrl, {
         headers: authHeaders
@@ -209,19 +186,12 @@ export async function generateVideo(prompt, duration = 5) {
 
       if (!statusResponse.ok) {
         throw new Error('Failed to check video generation status');
-      }
+      }      const statusData = await statusResponse.json();
 
-      const statusData = await statusResponse.json();
-      debugLog('Status check response:', {
-        status: statusData.status,
-        id: statusData.id,
-        hasGenerations: !!statusData.generations,
-        generationsLength: statusData.generations?.length,
-        firstGeneration: statusData.generations?.[0],
-      });
+      console.log(`📊 Video generation status: ${statusData.status}`);
 
       if (statusData.status === 'succeeded') {
-        debugLog('Job succeeded, full response:', JSON.stringify(statusData, null, 2));
+        
 
         // Check for generations array
         if (!statusData.generations) {
@@ -230,16 +200,16 @@ export async function generateVideo(prompt, duration = 5) {
 
         if (!statusData.generations[0]) {
           throw new Error('No generation data in generations array');
-        }
-
-        const generation = statusData.generations[0];
-        debugLog('Generation data:', generation);
+        }        const generation = statusData.generations[0];
+        
 
         // Get the generation ID from the succeeded response
         const generationId = generation.id;
         if (!generationId) {
           throw new Error('No generation ID found in the response');
-        }        // Get video content - construct content URL based on the original endpoint structure
+        }
+
+        console.log('🎯 Video generation completed, fetching video content...', { generationId });// Get video content - construct content URL based on the original endpoint structure
         let videoUrl;
         if (endpoint.includes('/video/generations/jobs') && endpoint.includes('?api-version=')) {
           // Complete Azure OpenAI endpoint URL - replace path with content path
@@ -266,7 +236,7 @@ export async function generateVideo(prompt, duration = 5) {
           }
         }
         
-        debugLog('Video content URL:', videoUrl);
+        
 
         // Make a fetch request to get the actual video data
         const videoResponse = await fetch(videoUrl, {
@@ -274,10 +244,10 @@ export async function generateVideo(prompt, duration = 5) {
         });
 
         if (!videoResponse.ok) {
-          throw new Error('Failed to fetch video content');
-        }
+          throw new Error('Failed to fetch video content');        }
 
         const videoBlob = await videoResponse.blob();
+        console.log('🎉 Video generation completed successfully!', { blobSize: videoBlob.size });
         return { videoUrl: URL.createObjectURL(videoBlob) };
       } 
       
@@ -301,39 +271,23 @@ export async function generateVideo(prompt, duration = 5) {
 export async function generateImage(prompt) {
   const { apiKey, endpoint } = getApiSettings('image');
 
-  debugLog('Image Configuration:', {
-    endpoint,
-    apiKeyLength: apiKey?.length || 0
-  });
-
-  debugLog('URL Detection Debug:', {
-    endpoint,
-    includesImagesGenerations: endpoint.includes('/images/generations'),
-    includesApiVersion: endpoint.includes('?api-version='),
-    bothConditions: endpoint.includes('/images/generations') && endpoint.includes('?api-version=')
-  });
   try {
     // Check if this is a complete API endpoint URL
     let apiUrl;
-    
-    // If the endpoint contains the full path and API version, use it directly
+      // If the endpoint contains the full path and API version, use it directly
     if (endpoint.includes('/openai/deployments/') && endpoint.includes('/images/generations') && endpoint.includes('api-version=')) {
-      console.log('✅ Using complete Azure OpenAI endpoint directly:', endpoint);
       apiUrl = endpoint;
     }
     // If it contains the foundry-style path, use it directly
     else if (endpoint.includes('/v1/images/generations')) {
-      console.log('✅ Using complete AI Foundry endpoint directly:', endpoint);
       apiUrl = endpoint;
     }
     // If it just contains the generic path, use it directly
     else if (endpoint.includes('/images/generations')) {
-      console.log('✅ Using complete endpoint with generic path directly:', endpoint);
       apiUrl = endpoint;
     }
     // Otherwise, treat it as a base URL and construct the full endpoint
     else {
-      console.log('🔧 Constructing URL from base endpoint:', endpoint);
       const baseUrl = new URL(endpoint).toString().replace(/\/?$/, '/');
       
       if (endpoint.includes('inference.ai.azure.com')) {
@@ -344,18 +298,9 @@ export async function generateImage(prompt) {
         const apiVersion = '2024-10-01-preview';
         apiUrl = `${baseUrl}openai/deployments/gpt-image-1/images/generations?api-version=${apiVersion}`;
       }
-    }
-      console.log('🎯 Final API URL being used:', apiUrl);
-    console.log('🔑 Auth header type:', getAuthHeaderName(endpoint));
-    console.log('🔑 API key length:', apiKey?.length);
-    console.log('🔑 API key first 8 chars:', apiKey?.substring(0, 8));
+    }    const headers = getAuthHeaders(apiKey, endpoint);
 
-    const headers = getAuthHeaders(apiKey, endpoint);
-    console.log('📋 Request headers:', {
-      ...headers,
-      [getAuthHeaderName(endpoint)]: headers['api-key'] ? `${headers['api-key'].substring(0, 8)}...` : headers['Authorization']?.substring(0, 20) + '...'
-    });
-
+    console.log('🖼️ Starting image generation...', { prompt, endpoint: apiUrl });
     const submitResponse = await fetch(apiUrl, {
       method: 'POST',
       headers,
@@ -369,13 +314,11 @@ export async function generateImage(prompt) {
 
     if (!submitResponse.ok) {
       const errorData = await submitResponse.json().catch(() => ({}));
-      debugLog('Error data:', errorData);
+      
       const errorMessage = errorData.error?.message || submitResponse.statusText;
       throw new Error(`GPT-4V API error: ${errorMessage}`);
-    }
-
-    const responseData = await submitResponse.json();
-    debugLog('GPT-4V API Response:', responseData);
+    }    const responseData = await submitResponse.json();
+    console.log('✅ Image generation API response received');
 
     if (!responseData || !Array.isArray(responseData.data) || responseData.data.length === 0) {
       throw new Error('No images were generated in the response');
@@ -388,10 +331,12 @@ export async function generateImage(prompt) {
 
     // For gpt-image-1, we always get base64 data
     if (firstImage.b64_json) {
+      console.log('🎉 Image generation completed successfully!');
       return { imageUrl: `data:image/png;base64,${firstImage.b64_json}` };
     }
     // Fallback for url format
     if (firstImage.url) {
+      console.log('🎉 Image generation completed successfully!');
       return { imageUrl: firstImage.url };
     }
 
@@ -430,12 +375,6 @@ async function fileToBase64(file) {
 export async function editImage(prompt, imageFile, maskFile = null) {
   const { apiKey, endpoint } = getApiSettings('image');
 
-  debugLog('Edit Configuration:', {
-    endpoint,
-    apiKeyLength: apiKey?.length || 0,
-    hasImage: !!imageFile,
-    hasMask: !!maskFile
-  });
   try {
     // Use the endpoint directly if it's already a complete URL with path and query params
     let apiUrl;
@@ -467,12 +406,11 @@ export async function editImage(prompt, imageFile, maskFile = null) {
     formData.append('image', imageFile);
     if (maskFile) {
       formData.append('mask', maskFile);
-    }
-    formData.append('n', '1');
+    }    formData.append('n', '1');
     formData.append('size', '1024x1024');
     formData.append('quality', 'high');
 
-    debugLog('Edit Request URL:', apiUrl);
+    console.log('✏️ Starting image editing...', { prompt, hasImage: !!imageFile, hasMask: !!maskFile, endpoint: apiUrl });
 
     // Get headers without Content-Type for FormData
     const authHeaderName = getAuthHeaderName(endpoint);
@@ -489,11 +427,11 @@ export async function editImage(prompt, imageFile, maskFile = null) {
       body: formData
     });
 
-    debugLog('Edit Response status:', submitResponse.status);
+    
 
     if (!submitResponse.ok) {
       const errorData = await submitResponse.json().catch(() => ({}));
-      debugLog('Error data:', errorData);
+      
       const errorMessage = errorData.error?.message || submitResponse.statusText;
 
       switch (submitResponse.status) {
@@ -508,10 +446,8 @@ export async function editImage(prompt, imageFile, maskFile = null) {
         default:
           throw new Error(`Azure OpenAI API error: ${errorMessage}`);
       }
-    }
-
-    const responseData = await submitResponse.json();
-    debugLog('Edit Response:', responseData);
+    }    const responseData = await submitResponse.json();
+    console.log('✅ Image editing API response received');
 
     if (!responseData || !Array.isArray(responseData.data) || responseData.data.length === 0) {
       throw new Error('No images were generated in the response');
@@ -524,10 +460,12 @@ export async function editImage(prompt, imageFile, maskFile = null) {
 
     // For gpt-image-1, we always get base64 data
     if (firstImage.b64_json) {
+      console.log('🎉 Image editing completed successfully!');
       return { imageUrl: `data:image/png;base64,${firstImage.b64_json}` };
     }
     // Fallback for url format
     if (firstImage.url) {
+      console.log('🎉 Image editing completed successfully!');
       return { imageUrl: firstImage.url };
     }
 
