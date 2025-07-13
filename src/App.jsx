@@ -32,7 +32,33 @@ function App() {
   };
 
   const addToHistory = (media) => {
-    setHistory(prev => [media, ...prev]);
+    setHistory(prev => {
+      const newHistory = [media, ...prev];
+      // Limit history to prevent storage issues
+      const limitedHistory = newHistory.slice(0, 50);
+      
+      // Safe localStorage handling with quota error protection
+      try {
+        localStorage.setItem('mediaHistory', JSON.stringify(limitedHistory));
+      } catch (error) {
+        if (error.name === 'QuotaExceededError') {
+          console.warn('Storage quota exceeded, keeping minimal history');
+          // Keep only the last 10 items if storage is full
+          const minimalHistory = newHistory.slice(0, 10);
+          try {
+            localStorage.setItem('mediaHistory', JSON.stringify(minimalHistory));
+            return minimalHistory;
+          } catch (innerError) {
+            console.error('Failed to save even minimal history:', innerError);
+            // Return at least the current item
+            return [media];
+          }
+        }
+        console.error('Failed to save history:', error);
+      }
+      
+      return limitedHistory;
+    });
   };
 
   const clearHistory = () => {
@@ -102,20 +128,23 @@ function App() {
                       <button 
                         className="history-btn enlarge-btn"
                         onClick={() => setEnlargedImage(item)}
+                        title="Enlarge"
                       >
-                        Enlarge
+                        🔍
                       </button>
                       <button 
                         className="history-btn download-btn"
                         onClick={() => downloadImage(item.imageUrl || item.videoUrl)}
+                        title="Download"
                       >
-                        Download
+                        ⬇️
                       </button>
                       <button 
                         className="history-btn delete-btn"
                         onClick={() => deleteImage(item.id)}
+                        title="Delete"
                       >
-                        Delete
+                        🗑️
                       </button>
                     </div>
                   </div>

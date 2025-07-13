@@ -3,6 +3,7 @@
   align-items: center;
   gap: 0.5rem;
   flex-shrink: 0;
+  margin: 8px 0 0 0;
 }
 
 .upload-btn {

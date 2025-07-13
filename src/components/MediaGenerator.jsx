@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { generateImage, editImage, generateVideo } from '../services/apiService';
 import PromptInput from './PromptInput';
@@ -17,6 +17,17 @@ function MediaGenerator({ darkMode, toggleTheme, onMediaGenerated }) {
   const [referenceImage, setReferenceImage] = useState(null);
   const [shouldResetUploads, setShouldResetUploads] = useState(false);
   const [generationType, setGenerationType] = useState('image');
+  const [fallbackNotification, setFallbackNotification] = useState('');
+
+  // Clear fallback notification after 5 seconds
+  useEffect(() => {
+    if (fallbackNotification) {
+      const timer = setTimeout(() => {
+        setFallbackNotification('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [fallbackNotification]);
 
   const handleImageSelect = (file) => {
     setReferenceImage(file);
@@ -58,7 +69,20 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
     } else {
       // Use image endpoint and model
       if (referenceImage) {
-        result = await editImage(promptText, referenceImage, null);
+        try {
+          console.log('Attempting image editing with reference image...');
+          result = await editImage(promptText, referenceImage, null);
+        } catch (editError) {
+          console.warn('Image editing with reference failed, falling back to generation without reference:', editError);
+          setFallbackNotification('Reference image processing failed. Generated image without reference instead.');
+          // Fallback to generating without reference image
+          try {
+            result = await generateImage(promptText);
+          } catch (fallbackError) {
+            console.error('Fallback image generation also failed:', fallbackError);
+            throw fallbackError; // Re-throw the fallback error
+          }
+        }
       } else {
         result = await generateImage(promptText);
       }
@@ -131,7 +155,7 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
   return (
     <div className={`media-generator ${darkMode ? 'dark' : 'light'}`}>
       <div className="title-section">
-        <h1>CAMEO</h1>
+        <h1>🎬 CAMEO</h1>
         <h2>Creative AI Media Engine Orchestrator</h2>
       </div>
       
@@ -153,24 +177,28 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
             clearUploads();
           }}
         >
-          Video        </button>
+          Video
+        </button>
       </div>
 
-      {currentMedia && (
-        <div className="media-display">
-          {currentMedia.type === 'image' ? (
-            <ImageDisplay 
-              currentImage={currentMedia}
-              isGenerating={isGenerating}
-            />
-          ) : (
-            <VideoDisplay 
-              videoUrl={currentMedia.videoUrl}
-              prompt={currentMedia.prompt}
-              isGenerating={isGenerating}
-            />          )}
-        </div>
-      )}
+      <div className="media-display">
+        {currentMedia && (
+          <>
+            {currentMedia.type === 'image' ? (
+              <ImageDisplay 
+                currentImage={currentMedia}
+                isGenerating={isGenerating}
+              />
+            ) : (
+              <VideoDisplay 
+                videoUrl={currentMedia.videoUrl}
+                prompt={currentMedia.prompt}
+                isGenerating={isGenerating}
+              />
+            )}
+          </>
+        )}
+      </div>
 
       <PromptInput
         onSubmit={handleSubmit}
@@ -184,6 +212,12 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
       {error && (
         <div className="error-message">
           <pre>{error}</pre>
+        </div>
+      )}
+
+      {fallbackNotification && (
+        <div className="fallback-notification">
+          <p>⚠️ {fallbackNotification}</p>
         </div>
       )}
 

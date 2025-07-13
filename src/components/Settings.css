@@ -263,18 +263,18 @@ select.settings-input:focus {
 }
 
 .btn-danger {
-  background: #dc2626;
+  background: var(--danger-color);
   color: white;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 2px 8px rgba(232, 17, 35, 0.3);
   width: 100%;
   font-weight: 700;
   letter-spacing: 0.8px;
 }
 
 .btn-danger:hover {
-  background: #b91c1c;
+  background: var(--danger-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+  box-shadow: 0 4px 12px rgba(232, 17, 35, 0.4);
 }
 
 .btn-danger:active {

@@ -89,10 +89,27 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
   };
 
   const clearData = () => {
+    // Preserve important data before clearing
+    const savedTheme = localStorage.getItem('theme');
+    const savedMediaHistory = localStorage.getItem('mediaHistory');
+    
     localStorage.clear();
-    setImageConfig({ endpoint: '', apiKey: '' });
+    
+    // Restore preserved data
+    if (savedTheme) {
+      localStorage.setItem('theme', savedTheme);
+    }
+    if (savedMediaHistory) {
+      localStorage.setItem('mediaHistory', savedMediaHistory);
+    }
+    
+    setImageConfig({ 
+      model: AI_MODELS.IMAGE_MODELS[0].value, 
+      endpoint: '', 
+      apiKey: '' 
+    });
     setVideoConfig({ endpoint: '', apiKey: '' });
-    alert('Data Cleared successfully!');
+    alert('Settings data cleared successfully! (Media history preserved)');
     onClose();
   };
 

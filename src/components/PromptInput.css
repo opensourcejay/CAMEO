@@ -1,6 +1,5 @@
 .prompt-input-container {
   position: relative;
-  margin-top: 300px; /* Add substantial top margin to move content down */
 }
 
 .textarea-wrapper {
@@ -83,6 +82,19 @@
 
 .ad-prompts-section {
   margin-top: var(--space-4);
+}
+
+.reference-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.reference-hint {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-align: center;
+  margin-top: var(--space-1);
 }
 
 .ad-prompts-section h3 {

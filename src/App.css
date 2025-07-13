@@ -177,8 +177,9 @@ body {
 
 .history-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
+  gap: var(--space-4);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--border-color);
   margin-bottom: var(--space-3);
@@ -212,15 +213,32 @@ body {
 }
 
 .clear-history {
-  color: var(--error-color);
+  background: linear-gradient(135deg, #2196f3 0%, #21cbf3 100%);
+  color: white;
   font-size: 0.9rem;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
+  font-weight: 500;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .clear-history:hover {
-  background-color: rgba(255, 59, 48, 0.1);
+  background: linear-gradient(135deg, #1976d2 0%, #1cb5e0 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+}
+
+.clear-history:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
+}
+
+.clear-history:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .history-grid {
@@ -271,52 +289,138 @@ body {
 
 .history-actions {
   display: flex;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: 0 var(--space-1);
+  justify-content: center;
 }
 
 .history-btn {
   flex: 1;
-  font-size: 0.65rem;
-  padding: var(--space-1) var(--space-1);
-  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
   white-space: nowrap;
   text-align: center;
   min-width: 0;
-  height: 24px;
+  height: 36px;
+  width: 36px;
   line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+
+.history-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.history-btn:hover::before {
+  left: 100%;
+}
+
+.history-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.3);
+}
+
+.history-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .enlarge-btn {
-  background-color: var(--accent-color);
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .enlarge-btn:hover {
-  background-color: var(--accent-dark);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #3d8bfe 0%, #00d9fe 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
 }
 
 .download-btn {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .download-btn:hover {
-  background-color: var(--primary-dark);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .delete-btn {
-  background-color: var(--error-color);
+  background: linear-gradient(135deg, #2196f3 0%, #21cbf3 100%);
   color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .delete-btn:hover {
-  background-color: #ff2d20;
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #1976d2 0%, #1cb5e0 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+}
+
+/* Dark theme button adjustments */
+.dark-theme .history-btn {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme .enlarge-btn {
+  background: linear-gradient(135deg, #3d8bfe 0%, #00d9fe 100%);
+}
+
+.dark-theme .enlarge-btn:hover {
+  background: linear-gradient(135deg, #2d7bde 0%, #00c9de 100%);
+  box-shadow: 0 6px 16px rgba(79, 172, 254, 0.3);
+}
+
+.dark-theme .download-btn {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+.dark-theme .download-btn:hover {
+  background: linear-gradient(135deg, #4a5fb8 0%, #5a3170 100%);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+}
+
+.dark-theme .delete-btn {
+  background: linear-gradient(135deg, #1976d2 0%, #1cb5e0 100%);
+}
+
+.dark-theme .delete-btn:hover {
+  background: linear-gradient(135deg, #1565c0 0%, #17a2b8 100%);
+  box-shadow: 0 6px 16px rgba(33, 150, 243, 0.3);
+}
+
+.dark-theme .clear-history {
+  background: linear-gradient(135deg, #1976d2 0%, #1cb5e0 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .clear-history:hover {
+  background: linear-gradient(135deg, #1565c0 0%, #17a2b8 100%);
+  box-shadow: 0 6px 16px rgba(33, 150, 243, 0.3);
 }
 
 .history-empty {
@@ -498,9 +602,10 @@ body {
   }
   
   .history-btn {
-    font-size: 0.6rem;
+    font-size: 0.9rem;
     padding: var(--space-1);
-    height: 20px;
+    height: 32px;
+    width: 32px;
   }
 
   .enlarged-prompt {

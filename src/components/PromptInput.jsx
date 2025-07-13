@@ -7,6 +7,19 @@ function PromptInput({ onSubmit, onImageSelect, isGenerating, darkMode, generati
   const [inputValue, setInputValue] = useState('');
   const [videoDuration, setVideoDuration] = useState(5); // Default to 5 seconds
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!inputValue.trim() || isGenerating) return;
+      
+      if (generationType === 'image') {
+        handleGenerateImage(e);
+      } else {
+        handleGenerateVideo(e);
+      }
+    }
+  };
+
   const handleGenerateImage = (e) => {
     e.preventDefault();
     if (!inputValue.trim() || isGenerating) return;
@@ -57,7 +70,8 @@ function PromptInput({ onSubmit, onImageSelect, isGenerating, darkMode, generati
             className={`prompt-textarea ${darkMode ? 'dark' : ''}`}
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Describe what you want to generate..."
+            onKeyDown={handleKeyDown}
+            placeholder="Describe what you want to generate... (Press Enter to generate)"
             disabled={isGenerating}
           />
             <div className="button-group">

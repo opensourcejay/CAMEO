@@ -3,6 +3,24 @@
  */
 
 /**
+ * Convert base64 string to Blob
+ * @param {string} base64 - Base64 string (without data: prefix)
+ * @param {string} mimeType - MIME type (default: image/png)
+ * @returns {Blob} - Blob object
+ */
+function base64ToBlob(base64, mimeType = 'image/png') {
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+  
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: mimeType });
+}
+
+/**
  * Get API settings from localStorage
  * @param {string} type - 'image' or 'video'
  * @returns {Object} - Object containing apiKey and endpoint
@@ -342,7 +360,11 @@ export async function generateImage(prompt) {
     // Check for base64 data (common format)
     if (firstImage.b64_json) {
       console.log('🎉 Image generation completed successfully!');
-      return { imageUrl: `data:image/png;base64,${firstImage.b64_json}` };
+      
+      // Convert base64 to data URL for persistent storage
+      const dataUrl = `data:image/png;base64,${firstImage.b64_json}`;
+      
+      return { imageUrl: dataUrl };
     }
     // Fallback for url format
     if (firstImage.url) {
@@ -479,7 +501,11 @@ export async function editImage(prompt, imageFile, maskFile = null) {
     // Check for base64 data (common format)
     if (firstImage.b64_json) {
       console.log('🎉 Image editing completed successfully!');
-      return { imageUrl: `data:image/png;base64,${firstImage.b64_json}` };
+      
+      // Convert base64 to data URL for persistent storage
+      const dataUrl = `data:image/png;base64,${firstImage.b64_json}`;
+      
+      return { imageUrl: dataUrl };
     }
     // Fallback for url format
     if (firstImage.url) {
