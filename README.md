@@ -13,6 +13,14 @@ Imagine having a professional creative studio at your fingertips. CAMEO combines
 - 📱 **Fully Responsive**: Perfect experience on any device
 - 🔐 **Privacy First**: Your data stays local, your creativity stays yours
 
+## 🆕 Latest Updates (v0.2.0)
+
+- ✨ **Welcome Tips**: Smart onboarding for first-time users
+- 🔧 **Consolidated Upload System**: Unified, optimized image upload handling
+- 🛡️ **Enhanced Error Boundaries**: Robust error handling and recovery
+- 📝 **Full TypeScript Support**: Complete PropTypes validation
+- 🎯 **Production Ready**: Optimized build with comprehensive testing
+
 ## 🚀 Quick Start
 
 ### Prerequisites

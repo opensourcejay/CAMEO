@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import './ConfigWarningModal.css';
 
 function ConfigWarningModal({ isOpen, onClose, message }) {
@@ -32,5 +33,11 @@ function ConfigWarningModal({ isOpen, onClose, message }) {
     </div>
   );
 }
+
+ConfigWarningModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  message: PropTypes.string.isRequired
+};
 
 export default ConfigWarningModal;

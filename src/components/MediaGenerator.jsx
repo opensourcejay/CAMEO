@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { generateImage, editImage, generateVideo } from '../services/apiService';
 import PromptInput from './PromptInput';
 import ImageDisplay from './ImageDisplay';
 import VideoDisplay from './VideoDisplay';
-import ImageUpload from './ImageUpload';
 import ConfigWarningModal from './ConfigWarningModal';
 import './MediaGenerator.css';
 
@@ -95,11 +95,11 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
       if (type === 'video') {
         const videoConfig = localStorage.getItem('azure_video_config');
         const config = videoConfig ? JSON.parse(videoConfig) : {};
-        endpointInfo = `\nVideo Endpoint: ${config.endpoint || 'Not configured'}\nVideo Model: sora`;
+        endpointInfo = `\nVideo Endpoint: ${config.endpoint || 'Not configured'}\nVideo Model: ${config.model || 'Azure Video Generation'}`;
       } else {
         const imageConfig = localStorage.getItem('azure_image_config');
         const config = imageConfig ? JSON.parse(imageConfig) : {};
-        endpointInfo = `\nImage Endpoint: ${config.endpoint || 'Not configured'}\nImage Model: gpt-image-1`;
+        endpointInfo = `\nImage Endpoint: ${config.endpoint || 'Not configured'}\nImage Model: ${config.model || 'Azure Image Generation'}`;
       }
 
       const errorMessage = 
@@ -156,13 +156,6 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
           Video        </button>
       </div>
 
-      {generationType === 'image' && (
-        <ImageUpload 
-          onImageSelect={handleImageSelect}
-          shouldReset={shouldResetUploads}
-        />
-      )}
-
       {currentMedia && (
         <div className="media-display">
           {currentMedia.type === 'image' ? (
@@ -185,6 +178,7 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
         isGenerating={isGenerating}
         darkMode={darkMode}
         generationType={generationType}
+        shouldResetUploads={shouldResetUploads}
       />
 
       {error && (
@@ -201,5 +195,11 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
     </div>
   );
 }
+
+MediaGenerator.propTypes = {
+  darkMode: PropTypes.bool.isRequired,
+  toggleTheme: PropTypes.func.isRequired,
+  onMediaGenerated: PropTypes.func.isRequired
+};
 
 export default MediaGenerator;

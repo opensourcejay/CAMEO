@@ -1,8 +1,19 @@
 import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import './Settings.css';
+
+// Available AI models configuration
+const AI_MODELS = {
+  IMAGE_MODELS: [
+    { value: 'gpt-image-1', label: 'GPT-Image-1', description: 'Precise detail-oriented images' },
+    { value: 'dall-e-3', label: 'DALL-E-3', description: 'Artistic creativity and interpretations' }
+  ],
+  VIDEO_MODEL: 'sora' // Video generation currently uses Sora
+};
 
 const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
   const [imageConfig, setImageConfig] = useState({
+    model: AI_MODELS.IMAGE_MODELS[0].value, // Default to first available model
     endpoint: '',
     apiKey: ''
   });
@@ -23,7 +34,11 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
       try {
         const parsed = JSON.parse(savedImageConfig);
         if (parsed.apiKey && parsed.endpoint) {
-          setImageConfig(parsed);
+          setImageConfig({
+            model: parsed.model || AI_MODELS.IMAGE_MODELS[0].value,
+            endpoint: parsed.endpoint,
+            apiKey: parsed.apiKey
+          });
         }
       } catch (e) {
         console.error('Failed to parse saved image config');
@@ -115,6 +130,27 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
           </button>
         </div>        <div className="settings-modal-body">
           <div className="settings-content">
+            {activeTab === 'image' && (
+              <div className="form-group">
+                <label htmlFor="model">AI Model *</label>
+                <select
+                  id="model"
+                  value={currentConfig.model || AI_MODELS.IMAGE_MODELS[0].value}
+                  onChange={(e) => handleConfigChange('model', e.target.value)}
+                  className="settings-input"
+                >
+                  {AI_MODELS.IMAGE_MODELS.map(model => (
+                    <option key={model.value} value={model.value}>
+                      {model.label} {model.value === AI_MODELS.IMAGE_MODELS[0].value ? '(Recommended)' : ''}
+                    </option>
+                  ))}
+                </select>
+                <small>
+                  Choose your preferred AI model: {AI_MODELS.IMAGE_MODELS.map(m => `${m.label} for ${m.description}`).join(', or ')}
+                </small>
+              </div>
+            )}
+            
             <div className="form-group">
               <label htmlFor="endpoint">Base Endpoint URL *</label>
               <input
@@ -122,11 +158,14 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
                 id="endpoint"
                 value={currentConfig.endpoint}
                 onChange={(e) => handleConfigChange('endpoint', e.target.value)}
-                placeholder={`Enter your Azure ${activeTab === 'image' ? 'image' : 'video'} generation endpoint`}
+                placeholder={`Enter your Azure ${activeTab === 'image' ? 'AI image generation' : 'video generation'} endpoint`}
                 className="settings-input"
               />
               <small>
-                Base URL of your Azure endpoint (e.g., https://your-resource.openai.azure.com/ or https://your-endpoint.inference.ai.azure.com/)
+                {activeTab === 'image' 
+                  ? `Base URL for your ${currentConfig.model || AI_MODELS.IMAGE_MODELS[0].label} deployment (e.g., https://your-resource.openai.azure.com/ or https://your-endpoint.inference.ai.azure.com/)`
+                  : `Base URL of your Azure video generation endpoint (e.g., https://your-resource.openai.azure.com/ or https://your-endpoint.inference.ai.azure.com/)`
+                }
               </small>
             </div>
 
@@ -166,6 +205,13 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
       </div>
     </div>
   );
+};
+
+Settings.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  darkMode: PropTypes.bool.isRequired,
+  onToggleTheme: PropTypes.func.isRequired
 };
 
 export default Settings;

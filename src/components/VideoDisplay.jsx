@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import './VideoDisplay.css';
 
 function VideoDisplay({ videoUrl, prompt, isGenerating }) {
@@ -60,5 +61,11 @@ function VideoDisplay({ videoUrl, prompt, isGenerating }) {
     </>
   );
 }
+
+VideoDisplay.propTypes = {
+  videoUrl: PropTypes.string,
+  prompt: PropTypes.string,
+  isGenerating: PropTypes.bool.isRequired
+};
 
 export default VideoDisplay;

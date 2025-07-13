@@ -1,0 +1,115 @@
+.welcome-tip {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 380px;
+  background: var(--background-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.welcome-tip.dark {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.welcome-tip-content {
+  display: flex;
+  align-items: flex-start;
+  padding: var(--space-3);
+  gap: var(--space-2);
+  position: relative;
+}
+
+.welcome-tip-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.welcome-tip-text {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.welcome-tip-text strong {
+  color: var(--primary-color);
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: 1rem;
+}
+
+.welcome-tip-text p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.welcome-tip-close {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+}
+
+.welcome-tip-close:hover {
+  background: var(--background-secondary);
+  color: var(--text-primary);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .welcome-tip {
+    position: relative;
+    top: 0;
+    right: 0;
+    margin: var(--space-3);
+    max-width: none;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-tip {
+    margin: var(--space-2);
+  }
+  
+  .welcome-tip-content {
+    padding: var(--space-2);
+  }
+  
+  .welcome-tip-text {
+    font-size: 0.85rem;
+  }
+}

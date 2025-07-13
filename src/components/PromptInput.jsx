@@ -1,42 +1,24 @@
 import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import ImageUpload from './ImageUpload';
 import './PromptInput.css';
 
-function PromptInput({ onSubmit, onImageSelect, isGenerating, darkMode, generationType }) {
+function PromptInput({ onSubmit, onImageSelect, isGenerating, darkMode, generationType, shouldResetUploads }) {
   const [inputValue, setInputValue] = useState('');
-  const [previewImage, setPreviewImage] = useState(null);
   const [videoDuration, setVideoDuration] = useState(5); // Default to 5 seconds
 
-  // Cleanup URL when component unmounts or previewImage changes
-  useEffect(() => {
-    return () => {
-      if (previewImage) {
-        URL.revokeObjectURL(previewImage);
-      }
-    };
-  }, [previewImage]);
   const handleGenerateImage = (e) => {
     e.preventDefault();
     if (!inputValue.trim() || isGenerating) return;
     onSubmit(inputValue.trim(), 'image');
     setInputValue('');
-    // Clear preview image when generating
-    if (previewImage) {
-      URL.revokeObjectURL(previewImage);
-      setPreviewImage(null);
-    }
   };
+
   const handleGenerateVideo = (e) => {
     e.preventDefault();
     if (!inputValue.trim() || isGenerating) return;
     onSubmit(inputValue.trim(), 'video', { duration: videoDuration });
     setInputValue('');
-  };
-  const handleImageUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onImageSelect?.(file);
-      setPreviewImage(URL.createObjectURL(file));
-    }
   };
 
   // Retail prompt examples
@@ -82,32 +64,14 @@ function PromptInput({ onSubmit, onImageSelect, isGenerating, darkMode, generati
             {/* Show image generation section only when generationType is 'image' */}
             {generationType === 'image' && (
               <div className="image-section">
-                {previewImage && (
-                  <div className="preview-container">
-                    <img 
-                      src={previewImage} 
-                      alt="Preview" 
-                      className="preview-image"
-                    />
-                  </div>
-                )}
-                
-                <input
-                  id="referenceImage"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  style={{ display: 'none' }}
-                />
-                <button
-                  type="button"
-                  className={`upload-btn ${darkMode ? 'dark' : ''}`}
-                  onClick={() => document.getElementById('referenceImage').click()}
+                <ImageUpload
+                  onImageSelect={onImageSelect}
+                  buttonText="Upload Reference Image"
+                  showPreview={true}
                   disabled={isGenerating}
-                >
-                  <span className="upload-icon">📎</span>
-                  {previewImage ? 'Change Image' : 'Upload Image'}
-                </button>
+                  darkMode={darkMode}
+                  shouldReset={shouldResetUploads}
+                />
                 
                 <button 
                   type="button"
@@ -186,5 +150,14 @@ function PromptInput({ onSubmit, onImageSelect, isGenerating, darkMode, generati
     </div>
   );
 }
+
+PromptInput.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  onImageSelect: PropTypes.func.isRequired,
+  isGenerating: PropTypes.bool.isRequired,
+  darkMode: PropTypes.bool.isRequired,
+  generationType: PropTypes.oneOf(['image', 'video']).isRequired,
+  shouldResetUploads: PropTypes.bool
+};
 
 export default PromptInput;

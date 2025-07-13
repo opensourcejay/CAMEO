@@ -1,31 +1,60 @@
 .image-upload-container {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.upload-section {
-  flex: 1;
-  display: flex;
-  gap: 1rem;
+  display: inline-flex;
   align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 
-.upload-content {
-  flex: 1;
+.upload-btn {
+  min-width: 140px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color, #e1e4e8);
+  background-color: var(--background-secondary, #f6f8fa);
+  color: var(--text-primary, #24292e);
+  gap: 0.5rem;
+  cursor: pointer;
 }
 
+.upload-btn:hover:not(:disabled) {
+  background-color: var(--background-tertiary, #e1e4e8);
+  border-color: var(--primary-color, #0366d6);
+}
 
-.mask-button {
-  border-style: dotted;
+.upload-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.upload-btn.dark {
+  background-color: var(--background-secondary-dark, #21262d);
+  color: var(--text-primary-dark, #c9d1d9);
+  border-color: var(--border-color-dark, #30363d);
+}
+
+.upload-btn.dark:hover:not(:disabled) {
+  background-color: var(--background-tertiary-dark, #30363d);
+}
+
+.upload-icon {
+  font-size: 1rem;
 }
 
 .preview-container {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
   overflow: hidden;
-  border: 2px solid #666;
+  border: 2px solid var(--border-color, #e1e4e8);
+  flex-shrink: 0;
 }
 
 .preview-image {
@@ -34,9 +63,31 @@
   object-fit: cover;
 }
 
+.remove-preview {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.remove-preview:hover {
+  background-color: rgba(255, 0, 0, 0.8);
+}
+
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .preview-container {
-    border-color: #888;
+    border-color: var(--border-color-dark, #30363d);
   }
 }

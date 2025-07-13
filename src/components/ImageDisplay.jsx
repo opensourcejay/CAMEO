@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import './ImageDisplay.css';
 
 function ImageDisplay({ currentImage, isGenerating }) {
@@ -54,5 +55,13 @@ function ImageDisplay({ currentImage, isGenerating }) {
     </>
   );
 }
+
+ImageDisplay.propTypes = {
+  currentImage: PropTypes.shape({
+    imageUrl: PropTypes.string.isRequired,
+    prompt: PropTypes.string.isRequired
+  }),
+  isGenerating: PropTypes.bool.isRequired
+};
 
 export default ImageDisplay;

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import MediaGenerator from './components/MediaGenerator'
 import Settings from './components/Settings'
+import WelcomeTip from './components/WelcomeTip'
 import './App.css'
 
 function App() {
@@ -159,6 +160,8 @@ function App() {
           darkMode={darkMode}
           onToggleTheme={toggleTheme}
         />
+        
+        <WelcomeTip darkMode={darkMode} settingsOpen={settingsOpen} />
       </div>
   )
 }

@@ -1,5 +1,5 @@
 /**
- * Service for interacting with the Azure OpenAI API (GPT-4V image generation and Sora video generation)
+ * Service for interacting with Azure OpenAI API (Image and Video generation)
  */
 
 /**
@@ -71,7 +71,7 @@ function getAuthHeaders(apiKey, endpoint) {
 }
 
 /**
- * Generate a video using Azure OpenAI's Sora API
+ * Generate a video using Azure OpenAI's Video API
  * @param {string} prompt - The text prompt for video generation
  * @param {number} duration - Duration in seconds (default: 5)
  * @returns {Promise<Object>} - Object containing videoUrl
@@ -111,7 +111,7 @@ export async function generateVideo(prompt, duration = 5) {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        model: 'sora',
+        model: 'sora', // Video generation currently uses Sora model
         prompt: prompt,
         n_seconds: duration,
         n_variants: 1,
@@ -124,7 +124,7 @@ export async function generateVideo(prompt, duration = 5) {
       let errorMessage = '';
       switch (submitResponse.status) {
         case 404:
-          errorMessage = `Video API endpoint not found at '${endpoint}'. Please verify the Sora API is available and the endpoint is correct.`;
+          errorMessage = `Video API endpoint not found at '${endpoint}'. Please verify the video API is available and the endpoint is correct.`;
           break;
         case 401:
           errorMessage = 'Authentication failed. Please verify your video API key is correct.';
@@ -269,12 +269,13 @@ export async function generateVideo(prompt, duration = 5) {
  * @returns {Promise<Object>} - Object containing imageUrl
  */
 export async function generateImage(prompt) {
-  const { apiKey, endpoint } = getApiSettings('image');
+  const { apiKey, endpoint, model } = getApiSettings('image');
 
   try {
-    // Check if this is a complete API endpoint URL
+    // Determine the API URL based on endpoint format
     let apiUrl;
-      // If the endpoint contains the full path and API version, use it directly
+    
+    // If the endpoint contains the full path and API version, use it directly
     if (endpoint.includes('/openai/deployments/') && endpoint.includes('/images/generations') && endpoint.includes('api-version=')) {
       apiUrl = endpoint;
     }
@@ -296,27 +297,36 @@ export async function generateImage(prompt) {
       } else {
         // Azure OpenAI Service endpoint
         const apiVersion = '2024-10-01-preview';
-        apiUrl = `${baseUrl}openai/deployments/gpt-image-1/images/generations?api-version=${apiVersion}`;
+        const modelName = model || 'dall-e-3'; // Use selected model or default fallback
+        apiUrl = `${baseUrl}openai/deployments/${modelName}/images/generations?api-version=${apiVersion}`;
       }
     }    const headers = getAuthHeaders(apiKey, endpoint);
 
-    console.log('🖼️ Starting image generation...', { prompt, endpoint: apiUrl });
+    console.log('🖼️ Starting image generation...', { prompt, model, endpoint: apiUrl });
+    
+    // Build request body based on model capabilities
+    const requestBody = {
+      prompt: prompt,
+      n: 1,
+      size: '1024x1024'
+    };
+    
+    // Add quality parameter only for models that support it (not DALL-E-3)
+    if (model && model.toLowerCase() !== 'dall-e-3') {
+      requestBody.quality = 'high';
+    }
+    
     const submitResponse = await fetch(apiUrl, {
       method: 'POST',
       headers,
-      body: JSON.stringify({
-        prompt: prompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'high'
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (!submitResponse.ok) {
       const errorData = await submitResponse.json().catch(() => ({}));
       
       const errorMessage = errorData.error?.message || submitResponse.statusText;
-      throw new Error(`GPT-4V API error: ${errorMessage}`);
+      throw new Error(`Image generation API error: ${errorMessage}`);
     }    const responseData = await submitResponse.json();
     console.log('✅ Image generation API response received');
 
@@ -329,7 +339,7 @@ export async function generateImage(prompt) {
       throw new Error('Image data is missing from response');
     }
 
-    // For gpt-image-1, we always get base64 data
+    // Check for base64 data (common format)
     if (firstImage.b64_json) {
       console.log('🎉 Image generation completed successfully!');
       return { imageUrl: `data:image/png;base64,${firstImage.b64_json}` };
@@ -395,9 +405,11 @@ export async function editImage(prompt, imageFile, maskFile = null) {
         // Azure AI Foundry endpoint
         apiUrl = `${baseUrl}v1/images/edits`;
       } else {
-        // Azure OpenAI Service endpoint
-        const apiVersion = '2024-10-01-preview'; // Latest API version
-        apiUrl = `${baseUrl}openai/deployments/gpt-image-1/images/edits?api-version=${apiVersion}`;
+        // Azure OpenAI Service endpoint - use the selected model
+        const { model } = getApiSettings('image');
+        const apiVersion = '2024-10-01-preview';
+        const modelName = model || 'dall-e-3'; // Use selected model or default fallback
+        apiUrl = `${baseUrl}openai/deployments/${modelName}/images/edits?api-version=${apiVersion}`;
       }
     }
     
@@ -406,9 +418,15 @@ export async function editImage(prompt, imageFile, maskFile = null) {
     formData.append('image', imageFile);
     if (maskFile) {
       formData.append('mask', maskFile);
-    }    formData.append('n', '1');
+    }
+    formData.append('n', '1');
     formData.append('size', '1024x1024');
-    formData.append('quality', 'high');
+    
+    // Add quality parameter only for models that support it (not DALL-E-3)
+    const { model } = getApiSettings('image');
+    if (model && model.toLowerCase() !== 'dall-e-3') {
+      formData.append('quality', 'high');
+    }
 
     console.log('✏️ Starting image editing...', { prompt, hasImage: !!imageFile, hasMask: !!maskFile, endpoint: apiUrl });
 
@@ -458,7 +476,7 @@ export async function editImage(prompt, imageFile, maskFile = null) {
       throw new Error('First image data is missing from response');
     }
 
-    // For gpt-image-1, we always get base64 data
+    // Check for base64 data (common format)
     if (firstImage.b64_json) {
       console.log('🎉 Image editing completed successfully!');
       return { imageUrl: `data:image/png;base64,${firstImage.b64_json}` };
