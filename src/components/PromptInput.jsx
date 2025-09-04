@@ -37,28 +37,20 @@ function PromptInput({ onSubmit, onImageSelect, isGenerating, darkMode, generati
   // Retail prompt examples
   const retailPrompts = [
     {
-      title: "Food & Restaurant",
-      prompt: "A mouthwatering gourmet burger with melted cheese dripping down, crispy bacon, fresh lettuce, and a brioche bun, captured in a trendy restaurant setting with soft bokeh lights and a marble table surface, in bold white letters it should say the words `Ready to eat` on top"
+      title: "Epic Burger Joint",
+      prompt: "A larger-than-life gourmet burger ad, towering burger with molten cheese, glowing neon flames in the background, hip diner vibe with graffiti walls and a bold street-food energy."
     },
     {
-      title: "Gas Station",
-      prompt: "A modern, sleek gas station at sunset with neon lights reflecting off a wet surface, luxury cars refueling, and a convenience store glowing invitingly in the background, clean aesthetic with dramatic lighting"
+      title: "Dallas Skyline Ad",
+      prompt: "The Dallas, Texas skyline at golden hour, Reunion Tower glowing, cowboy hats and boots subtly worked into a modern fashion ad style, with bold typography and warm cinematic lighting."
     },
     {
-      title: "Mattress Store",
-      prompt: "A luxurious bedroom setup with a premium mattress, crisp white bedding, and soft morning light streaming through sheer curtains"
+      title: "Hip-Hop Grocery Store",
+      prompt: "A 90s hip-hop inspired grocery store ad, bold graffiti text splashed across the walls, colorful produce stacked like a rap album cover, golden chains hanging from price tags, and an urban street-style vibe."
     },
     {
-      title: "Grocery Store",
-      prompt: "A beautifully arranged display of fresh, colorful organic produce with morning dew drops, warm lighting, and a shallow depth of field, styled like a premium grocery store Instagram post"
-    },
-    {
-      title: "Coffee Shop",
-      prompt: "A perfectly crafted latte with intricate leaf art on a rustic wooden table, surrounded by fresh pastries and coffee beans, with warm, moody lighting and a cozy cafe atmosphere in the background"
-    },
-    {
-      title: "Electronics Store",
-      prompt: "The latest smartphones and tablets floating in space with dynamic light trails, holographic UI elements, and product specs appearing as sleek overlays, modern tech aesthetic with vibrant colors"
+      title: "Futuristic Car Dealership",
+      prompt: "A high-tech car dealership at night, showroom glowing with neon blue lights, sleek electric cars lined up under holographic signs, glass walls reflecting city skyscrapers, cinematic and futuristic."
     }
   ];
 
@@ -82,7 +74,7 @@ function PromptInput({ onSubmit, onImageSelect, isGenerating, darkMode, generati
                   onImageSelect={onImageSelect}
                   buttonText="Upload Reference Image"
                   showPreview={true}
-                  disabled={isGenerating}
+                  disabled={true} /* Permanently disabled */
                   darkMode={darkMode}
                   shouldReset={shouldResetUploads}
                 />
@@ -140,9 +132,9 @@ function PromptInput({ onSubmit, onImageSelect, isGenerating, darkMode, generati
             )}
           </div>        </div>
         
-        {/* Sample prompts - only show in image generation mode */}
+        {/* Sample prompts - only show in image generation mode and hide on mobile */}
         {generationType === 'image' && (
-          <div className="ad-prompts-section">
+          <div className="ad-prompts-section hide-on-mobile">
             <h3>📱 Sample Ad Prompts</h3>
             <div className="ad-prompts-grid">
               {retailPrompts.map((prompt, index) => (

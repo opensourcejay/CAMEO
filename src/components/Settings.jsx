@@ -2,20 +2,17 @@ import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './Settings.css';
 
-// Available AI models configuration
-const AI_MODELS = {
-  IMAGE_MODELS: [
-    { value: 'gpt-image-1', label: 'GPT-Image-1', description: 'Precise detail-oriented images' },
-    { value: 'dall-e-3', label: 'DALL-E-3', description: 'Artistic creativity and interpretations' }
-  ],
-  VIDEO_MODEL: 'sora' // Video generation currently uses Sora
+// Supported AI models information
+const AI_MODELS_INFO = {
+  IMAGE_MODELS: 'GPT-Image-1 (for photorealistic images)',
+  VIDEO_MODELS: 'SORA (for high-quality video generation from text prompts)'
 };
 
 const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
   const [imageConfig, setImageConfig] = useState({
-    model: AI_MODELS.IMAGE_MODELS[0].value, // Default to first available model
     endpoint: '',
-    apiKey: ''
+    apiKey: '',
+    model: 'gpt-image-1'  // Always use GPT-Image-1
   });
   
   const [videoConfig, setVideoConfig] = useState({
@@ -35,9 +32,9 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
         const parsed = JSON.parse(savedImageConfig);
         if (parsed.apiKey && parsed.endpoint) {
           setImageConfig({
-            model: parsed.model || AI_MODELS.IMAGE_MODELS[0].value,
             endpoint: parsed.endpoint,
-            apiKey: parsed.apiKey
+            apiKey: parsed.apiKey,
+            model: 'gpt-image-1' // Always use GPT-Image-1
           });
         }
       } catch (e) {
@@ -70,6 +67,7 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
       [field]: value
     }));
   };
+  
   const saveSettings = () => {
     if (activeTab === 'image') {
       if (!imageConfig.apiKey || !imageConfig.endpoint) {
@@ -103,11 +101,7 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
       localStorage.setItem('mediaHistory', savedMediaHistory);
     }
     
-    setImageConfig({ 
-      model: AI_MODELS.IMAGE_MODELS[0].value, 
-      endpoint: '', 
-      apiKey: '' 
-    });
+    setImageConfig({ endpoint: '', apiKey: '', model: 'gpt-image-1' });
     setVideoConfig({ endpoint: '', apiKey: '' });
     alert('Settings data cleared successfully! (Media history preserved)');
     onClose();
@@ -147,23 +141,24 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
           </button>
         </div>        <div className="settings-modal-body">
           <div className="settings-content">
-            {activeTab === 'image' && (
+            {activeTab === 'image' ? (
               <div className="form-group">
-                <label htmlFor="model">AI Model *</label>
-                <select
-                  id="model"
-                  value={currentConfig.model || AI_MODELS.IMAGE_MODELS[0].value}
-                  onChange={(e) => handleConfigChange('model', e.target.value)}
-                  className="settings-input"
-                >
-                  {AI_MODELS.IMAGE_MODELS.map(model => (
-                    <option key={model.value} value={model.value}>
-                      {model.label} {model.value === AI_MODELS.IMAGE_MODELS[0].value ? '(Recommended)' : ''}
-                    </option>
-                  ))}
-                </select>
+                <label>Supported Models</label>
+                <div className="model-info-box">
+                  {AI_MODELS_INFO.IMAGE_MODELS}
+                </div>
                 <small>
-                  Choose your preferred AI model: {AI_MODELS.IMAGE_MODELS.map(m => `${m.label} for ${m.description}`).join(', or ')}
+                  GPT-Image-1 is used for high-quality photorealistic image generation.
+                </small>
+              </div>
+            ) : (
+              <div className="form-group">
+                <label>Supported Models</label>
+                <div className="model-info-box">
+                  {AI_MODELS_INFO.VIDEO_MODELS}
+                </div>
+                <small>
+                  The appropriate model will be automatically selected based on your endpoint configuration.
                 </small>
               </div>
             )}
@@ -180,8 +175,8 @@ const Settings = ({ isOpen, onClose, darkMode, onToggleTheme }) => {
               />
               <small>
                 {activeTab === 'image' 
-                  ? `Base URL for your ${currentConfig.model || AI_MODELS.IMAGE_MODELS[0].label} deployment (e.g., https://your-resource.openai.azure.com/ or https://your-endpoint.inference.ai.azure.com/)`
-                  : `Base URL of your Azure video generation endpoint (e.g., https://your-resource.openai.azure.com/ or https://your-endpoint.inference.ai.azure.com/)`
+                  ? `Base URL for your Azure OpenAI image generation endpoint (e.g., https://your-resource.openai.azure.com/)`
+                  : `Base URL of your Azure video generation endpoint (e.g., https://your-resource.openai.azure.com/)`
                 }
               </small>
             </div>

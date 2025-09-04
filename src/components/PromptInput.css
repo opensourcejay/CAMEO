@@ -278,9 +278,38 @@
   }
 }
 
+@media (max-width: 1200px) {
+  .ad-prompts-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 991px) {
+  .prompt-textarea {
+    min-height: 80px;
+  }
+  
+  .button-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .button-group > div {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: var(--space-2);
+  }
+  
+  .ad-prompts-section {
+    margin-top: var(--space-3);
+  }
+}
+
 @media (max-width: 768px) {
   .prompt-textarea {
     font-size: 0.9rem;
+    min-height: 70px;
   }
   
   .generate-btn {
@@ -294,5 +323,66 @@
 
   .ad-prompt-card {
     padding: var(--space-2);
+  }
+  
+  .ad-prompts-section h3 {
+    font-size: 1rem;
+  }
+  
+  /* Hide the ad prompts section on mobile */
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .prompt-textarea {
+    font-size: 0.85rem;
+    min-height: 80px;
+    padding: var(--space-2);
+  }
+  
+  .generate-btn {
+    font-size: 0.9rem;
+    padding: var(--space-2) var(--space-3);
+    height: 45px;
+  }
+  
+  .ad-prompt-title {
+    font-size: 0.9rem;
+  }
+  
+  .ad-prompt-preview {
+    font-size: 0.8rem;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+  
+  /* Make sure the prompt input and button are very clear on mobile */
+  .prompt-input-container {
+    padding: var(--space-2);
+    background-color: rgba(var(--primary-rgb), 0.05);
+    border-radius: var(--radius-md);
+  }
+  
+  .image-section {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .generate-btn {
+    width: 100%;
+    margin-top: var(--space-2);
+  }
+}
+
+@media (max-width: 360px) {
+  .prompt-textarea {
+    font-size: 0.8rem;
+    min-height: 50px;
+  }
+  
+  .generate-btn {
+    font-size: 0.8rem;
   }
 }

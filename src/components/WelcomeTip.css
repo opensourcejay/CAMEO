@@ -84,6 +84,22 @@
 }
 
 /* Responsive design */
+@media (max-width: 1200px) {
+  .welcome-tip {
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 991px) {
+  .welcome-tip {
+    max-width: 280px;
+  }
+  
+  .welcome-tip-text {
+    font-size: 0.9rem;
+  }
+}
+
 @media (max-width: 768px) {
   .welcome-tip {
     position: relative;
@@ -111,5 +127,31 @@
   
   .welcome-tip-text {
     font-size: 0.85rem;
+  }
+  
+  .welcome-tip-footer {
+    padding-top: var(--space-1);
+  }
+}
+
+@media (max-width: 360px) {
+  .welcome-tip {
+    margin: var(--space-1);
+  }
+  
+  .welcome-tip-content {
+    padding: var(--space-1);
+  }
+  
+  .welcome-tip-text {
+    font-size: 0.8rem;
+  }
+  
+  .welcome-tip-close {
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
   }
 }

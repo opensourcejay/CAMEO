@@ -35,6 +35,42 @@
   opacity: 0.8;
 }
 
+.progress-details {
+  margin-top: 20px;
+  width: 80%;
+  max-width: 500px;
+  display: flex;
+  justify-content: center;
+}
+
+.progress-bar {
+  height: 6px;
+  background-color: rgba(200, 200, 200, 0.3);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 10px 0;
+  width: 100%;
+}
+
+.progress-indicator {
+  height: 100%;
+  width: 50%;
+  background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+  border-radius: 3px;
+  animation: progress-animation 1.5s infinite ease-in-out alternate;
+}
+
+@keyframes progress-animation {
+  0% {
+    width: 10%;
+    opacity: 0.6;
+  }
+  100% {
+    width: 90%;
+    opacity: 1;
+  }
+}
+
 .video-result {
   width: 100%;
   display: flex;
@@ -141,17 +177,10 @@
 }
 
 .enlarged-video {
-  max-width: 90vw;
-  max-height: 80vh;
+  max-width: 85vw;
+  max-height: 75vh;
   border-radius: 12px;
-}
-
-.enlarged-prompt {
-  color: white;
-  margin-top: 1rem;
-  text-align: center;
-  max-width: 600px;
-  line-height: 1.4;
+  width: 100%;
 }
 
 /* Dark mode adjustments */
@@ -160,6 +189,26 @@
 }
 
 /* Responsive design */
+@media (max-width: 1200px) {
+  .video-display {
+    min-height: 350px;
+  }
+  
+  .video-player {
+    max-height: 65vh;
+  }
+}
+
+@media (max-width: 991px) {
+  .video-display {
+    min-height: 320px;
+  }
+  
+  .video-controls button {
+    padding: var(--space-1) var(--space-2);
+  }
+}
+
 @media (max-width: 768px) {
   .video-display {
     min-height: 300px;
@@ -179,7 +228,62 @@
   }
   
   .enlarged-video {
-    max-width: 95vw;
-    max-height: 70vh;
+    max-width: 90vw;
+    max-height: 65vh;
+  }
+  
+  .video-prompt {
+    font-size: 0.9rem;
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .video-display {
+    min-height: 250px;
+    padding: 0.75rem;
+  }
+  
+  .video-player {
+    max-height: 55vh;
+  }
+  
+  .video-controls {
+    padding: var(--space-1);
+  }
+  
+  .video-controls button {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+  
+  .video-prompt {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  
+  .enlarged-video {
+    max-height: 55vh;
+  }
+}
+
+@media (max-width: 360px) {
+  .video-display {
+    min-height: 200px;
+    padding: 0.5rem;
+  }
+  
+  .video-player {
+    max-height: 50vh;
+  }
+  
+  .video-controls button {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+  
+  .video-prompt {
+    font-size: 0.8rem;
   }
 }

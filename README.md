@@ -6,7 +6,7 @@ Turn your imagination into reality with CAMEO – your gateway to next-generatio
 
 Imagine having a professional creative studio at your fingertips. CAMEO combines the power of Azure's most advanced AI models to bring your ideas to life:
 
-- 🎨 **GPT-Image-1 & DALL-E-3**: Create breathtaking images with unparalleled detail and accuracy
+- 🎨 **GPT-Image-1**: Create breathtaking images with unparalleled detail and accuracy
 - 🎥 **SORA**: Generate mesmerizing videos with cinematic quality (5-20 seconds)
 - 🔄 **Smart Image Editing**: Transform and enhance your existing images
 - 🌓 **Dark/Light Themes**: Work comfortably in any lighting condition
@@ -18,7 +18,7 @@ Imagine having a professional creative studio at your fingertips. CAMEO combines
 - ✨ **Welcome Tips**: Smart onboarding for first-time users
 - 🔧 **Consolidated Upload System**: Unified, optimized image upload handling
 - 🛡️ **Enhanced Error Boundaries**: Robust error handling and recovery
-- 📝 **Full TypeScript Support**: Complete PropTypes validation
+- 📝 **Complete PropTypes Validation**: Comprehensive type checking for all components
 - 🎯 **Production Ready**: Optimized build with comprehensive testing
 
 ## 🚀 Quick Start
@@ -28,7 +28,7 @@ Imagine having a professional creative studio at your fingertips. CAMEO combines
 - Node.js 18+ and npm
 - Azure Foundry access with appropriate subscriptions
 - Model deployments:
-  - Image Generation: GPT-Image-1 or DALL-E-3
+  - Image Generation: GPT-Image-1
   - Video Generation: SORA
 
 ### Installation
@@ -89,9 +89,7 @@ cameo/
 ## Advanced Features
 
 ### 🎨 Image Generation
-- Choose between two powerhouse models:
-  - **GPT-Image-1**: Exceptional at understanding complex prompts
-  - **DALL-E-3**: Master of artistic and creative interpretations
+- GPT-Image-1: Exceptional at understanding complex prompts
 - Support for reference image editing
 - Intelligent error handling with retry capabilities
 
@@ -140,7 +138,7 @@ cameo/
    - Note your endpoint and API key
 
 2. **Deploy Models**   - Deploy through Azure Foundry interface
-   - Configure GPT-Image-1 or DALL-E-3 for images
+   - Configure GPT-Image-1 for images
    - Set up SORA for video generation
    - Note deployment endpoints for the Settings UI
 
@@ -151,10 +149,6 @@ cameo/
 - **GPT-Image-1**
   - Best for: Precise, detail-oriented image generation
   - Excels at: Understanding complex prompts and requirements
-
-- **DALL-E-3**
-  - Best for: Artistic and creative interpretations
-  - Excels at: Unique artistic styles and compositions
 
 ### Video Model
 

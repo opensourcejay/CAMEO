@@ -17,11 +17,16 @@ function ImageDisplay({ currentImage, isGenerating }) {
   return (
     <>
       <div className="image-display">
-        {isGenerating ? (
+        {isGenerating || (currentImage && currentImage.isProgress) ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
             <p>Generating your image...</p>
             <p className="loading-info">This may take a few seconds</p>
+            <div className="progress-details">
+              <div className="progress-bar">
+                <div className="progress-indicator"></div>
+              </div>
+            </div>
           </div>
         ) : currentImage ? (
           <div className="image-result">
@@ -31,6 +36,51 @@ function ImageDisplay({ currentImage, isGenerating }) {
                 alt={currentImage.prompt} 
                 className="generated-image"
               />
+              <div className="image-prompt-overlay">
+                <p>{currentImage.prompt}</p>
+              </div>
+            </div>
+            <div className="share-buttons">
+              <a 
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent("I generated this image using C.A.M.E.O")}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="share-button facebook"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img src="/icons/facebook.svg" alt="Share on Facebook" className="share-icon" />
+                <span>Share</span>
+              </a>
+              <a 
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("I generated this image using C.A.M.E.O")}&url=${encodeURIComponent(window.location.href)}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="share-button twitter"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img src="/icons/twitter.svg" alt="Share on X" className="share-icon" />
+                <span>Share</span>
+              </a>
+              <a 
+                href={`https://www.instagram.com/?url=${encodeURIComponent(window.location.href)}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="share-button instagram"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img src="/icons/instagram.svg" alt="Share on Instagram" className="share-icon" />
+                <span>Share</span>
+              </a>
+              <a 
+                href={`https://www.tiktok.com/upload?url=${encodeURIComponent(window.location.href)}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="share-button tiktok"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img src="/icons/tiktok.svg" alt="Share on TikTok" className="share-icon" />
+                <span>Share</span>
+              </a>
             </div>
           </div>
         ) : (
@@ -45,11 +95,57 @@ function ImageDisplay({ currentImage, isGenerating }) {
       {enlargedImage && (
         <div className="enlarged-view" onClick={closeEnlarged}>
           <div className="close-enlarged">×</div>
-          <img 
-            src={enlargedImage.imageUrl} 
-            alt={enlargedImage.prompt}
-          />
-          <p className="enlarged-prompt">{enlargedImage.prompt}</p>
+          <div className="enlarged-media-container">
+            <img 
+              src={enlargedImage.imageUrl} 
+              alt={enlargedImage.prompt}
+            />
+            <div className="enlarged-prompt-overlay">
+              <p>{enlargedImage.prompt}</p>
+            </div>
+          </div>
+          <div className="enlarged-share-buttons">
+            <a 
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent("I generated this image using C.A.M.E.O")}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="share-button facebook"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img src="/icons/facebook.svg" alt="Share on Facebook" className="share-icon" />
+              <span>Share</span>
+            </a>
+            <a 
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("I generated this image using C.A.M.E.O")}&url=${encodeURIComponent(window.location.href)}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="share-button twitter"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img src="/icons/twitter.svg" alt="Share on X" className="share-icon" />
+              <span>Share</span>
+            </a>
+            <a 
+              href={`https://www.instagram.com/?url=${encodeURIComponent(window.location.href)}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="share-button instagram"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img src="/icons/instagram.svg" alt="Share on Instagram" className="share-icon" />
+              <span>Share</span>
+            </a>
+            <a 
+              href={`https://www.tiktok.com/upload?url=${encodeURIComponent(window.location.href)}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="share-button tiktok"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img src="/icons/tiktok.svg" alt="Share on TikTok" className="share-icon" />
+              <span>Share</span>
+            </a>
+          </div>
         </div>
       )}
     </>

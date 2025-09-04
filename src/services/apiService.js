@@ -38,6 +38,12 @@ function getApiSettings(type) {
     if (!parsed.apiKey || !parsed.endpoint) {
       throw new Error(`${type.charAt(0).toUpperCase() + type.slice(1)} API settings incomplete. Please check your API key and endpoint in Settings.`);
     }
+    
+    // Always use GPT-Image-1 for image generation
+    if (type === 'image') {
+      parsed.model = 'gpt-image-1';
+    }
+    
     return parsed;
   } catch (error) {
     throw new Error(`Invalid ${type} API settings. Please reconfigure in Settings.`);
@@ -129,7 +135,7 @@ export async function generateVideo(prompt, duration = 5) {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        model: 'sora', // Video generation currently uses Sora model
+        model: 'sora-1.0', // Current Azure video generation model
         prompt: prompt,
         n_seconds: duration,
         n_variants: 1,
@@ -287,7 +293,7 @@ export async function generateVideo(prompt, duration = 5) {
  * @returns {Promise<Object>} - Object containing imageUrl
  */
 export async function generateImage(prompt) {
-  const { apiKey, endpoint, model } = getApiSettings('image');
+  const { apiKey, endpoint } = getApiSettings('image');
 
   try {
     // Determine the API URL based on endpoint format
@@ -315,24 +321,23 @@ export async function generateImage(prompt) {
       } else {
         // Azure OpenAI Service endpoint
         const apiVersion = '2024-10-01-preview';
-        const modelName = model || 'dall-e-3'; // Use selected model or default fallback
+        
+        // Always use GPT-Image-1
+        const modelName = 'gpt-image-1';
+        
         apiUrl = `${baseUrl}openai/deployments/${modelName}/images/generations?api-version=${apiVersion}`;
       }
     }    const headers = getAuthHeaders(apiKey, endpoint);
 
-    console.log('🖼️ Starting image generation...', { prompt, model, endpoint: apiUrl });
+    console.log('🖼️ Starting image generation...', { prompt, endpoint: apiUrl });
     
     // Build request body based on model capabilities
     const requestBody = {
       prompt: prompt,
       n: 1,
-      size: '1024x1024'
+      size: '1024x1024',
+      quality: 'high' // Always use high quality for GPT-Image-1
     };
-    
-    // Add quality parameter only for models that support it (not DALL-E-3)
-    if (model && model.toLowerCase() !== 'dall-e-3') {
-      requestBody.quality = 'high';
-    }
     
     const submitResponse = await fetch(apiUrl, {
       method: 'POST',
@@ -430,7 +435,7 @@ export async function editImage(prompt, imageFile, maskFile = null) {
         // Azure OpenAI Service endpoint - use the selected model
         const { model } = getApiSettings('image');
         const apiVersion = '2024-10-01-preview';
-        const modelName = model || 'dall-e-3'; // Use selected model or default fallback
+        const modelName = 'gpt-image-1'; // Always use GPT-Image-1
         apiUrl = `${baseUrl}openai/deployments/${modelName}/images/edits?api-version=${apiVersion}`;
       }
     }
@@ -444,11 +449,8 @@ export async function editImage(prompt, imageFile, maskFile = null) {
     formData.append('n', '1');
     formData.append('size', '1024x1024');
     
-    // Add quality parameter only for models that support it (not DALL-E-3)
-    const { model } = getApiSettings('image');
-    if (model && model.toLowerCase() !== 'dall-e-3') {
-      formData.append('quality', 'high');
-    }
+    // Always add quality parameter for GPT-Image-1
+    formData.append('quality', 'high');
 
     console.log('✏️ Starting image editing...', { prompt, hasImage: !!imageFile, hasMask: !!maskFile, endpoint: apiUrl });
 

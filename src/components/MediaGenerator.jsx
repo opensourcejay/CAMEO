@@ -49,6 +49,19 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
     setTimeout(() => setShouldResetUploads(false), 100);
 
     let result;
+    
+    // Create a progress item for display during generation
+    const progressItem = {
+      id: Date.now(),
+      prompt: promptText,
+      isProgress: true,
+      timestamp: new Date().toISOString(),
+      type: type
+    };
+    
+    // Show progress immediately
+    setCurrentMedia(progressItem);
+    
     if (type === 'video') {
       // Use video endpoint and model with duration from options
       const duration = options.duration || 5; // Default to 5 seconds
@@ -58,7 +71,7 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
       }
 
       const newVideoItem = {
-        id: Date.now(),
+        id: progressItem.id, // Keep the same ID for continuity
         prompt: promptText,
         videoUrl: result.videoUrl,
         timestamp: new Date().toISOString(),
@@ -92,7 +105,7 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
       }
 
       const newImageItem = {
-        id: Date.now(),
+        id: progressItem.id, // Keep the same ID for continuity
         prompt: promptText,
         imageUrl: result.imageUrl,
         timestamp: new Date().toISOString(),
@@ -194,6 +207,7 @@ const handleSubmit = async (promptText, type = 'image', options = {}) => {
                 videoUrl={currentMedia.videoUrl}
                 prompt={currentMedia.prompt}
                 isGenerating={isGenerating}
+                currentMedia={currentMedia}
               />
             )}
           </>

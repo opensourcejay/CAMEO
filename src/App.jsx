@@ -17,6 +17,7 @@ function App() {
   
   const [enlargedImage, setEnlargedImage] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [historyVisible, setHistoryVisible] = useState(true); // For mobile toggle
 
   useEffect(() => {
     document.body.className = darkMode ? 'dark-theme' : 'light-theme';
@@ -87,64 +88,79 @@ function App() {
     document.body.removeChild(link);
   };
 
-  return (      <div className="app-container">
-        <main className="main-content">
-          <MediaGenerator 
-            darkMode={darkMode} 
-            toggleTheme={toggleTheme}
-            onMediaGenerated={addToHistory}
-          />
-        </main>
-        <aside className="history-sidebar">          <div className="history-header">
-            <h2>Generation History</h2>
-            <div className="header-actions">
-              {history.length > 0 && (
-                <button className="clear-history" onClick={clearHistory}>
-                  Clear All
-                </button>
-              )}
-            </div>
+  return (      
+    <div className="app-container">
+      <button 
+        className="history-toggle-btn" 
+        onClick={() => setHistoryVisible(!historyVisible)}
+        aria-label={historyVisible ? "Hide History" : "Show History"}
+      >
+        <img 
+          src={historyVisible ? "/icons/flaticon/close.svg" : "/icons/flaticon/menu.svg"} 
+          alt={historyVisible ? "Hide History" : "Show History"} 
+          className="flaticon-icon" 
+        />
+      </button>
+      <main className="main-content">
+        <MediaGenerator 
+          darkMode={darkMode} 
+          toggleTheme={toggleTheme}
+          onMediaGenerated={addToHistory}
+        />
+      </main>
+      <aside className={`history-sidebar ${historyVisible ? 'visible' : 'hidden'}`}>
+        <div className="history-header">
+          <h2>Generation History</h2>
+          <div className="header-actions">
+            {history.length > 0 && (
+              <button className="clear-history" onClick={clearHistory}>
+                <img src="/icons/flaticon/clear-all.svg" alt="Clear All" className="flaticon-icon" />
+                <span>Clear All</span>
+              </button>
+            )}
           </div>
+        </div>
           
           {history.length > 0 ? (            <div className="history-grid">
               {history.map(item => (
                 <div key={item.id} className="history-item">
-                  {item.type === 'video' ? (
-                    <video 
-                      src={item.videoUrl} 
-                      className="history-video"
-                      preload="metadata"
-                    />
-                  ) : (
-                    <img 
-                      src={item.imageUrl} 
-                      alt={item.prompt} 
-                      className="history-image"
-                    />
-                  )}
+                  <div className="history-media-container">
+                    {item.type === 'video' ? (
+                      <video 
+                        src={item.videoUrl} 
+                        className="history-video"
+                        preload="metadata"
+                      />
+                    ) : (
+                      <img 
+                        src={item.imageUrl} 
+                        alt={item.prompt} 
+                        className="history-image"
+                      />
+                    )}
+                  </div>
                   <div className="history-content">
-                    <p className="history-prompt">{item.prompt}</p>
                     <div className="history-actions">
                       <button 
                         className="history-btn enlarge-btn"
                         onClick={() => setEnlargedImage(item)}
                         title="Enlarge"
                       >
-                        🔍
+                        <img src="/icons/flaticon/magnify.svg" alt="Enlarge" className="flaticon-icon" />
                       </button>
                       <button 
                         className="history-btn download-btn"
                         onClick={() => downloadImage(item.imageUrl || item.videoUrl)}
                         title="Download"
                       >
-                        ⬇️
+                        <img src="/icons/flaticon/download.svg" alt="Download" className="flaticon-icon" />
                       </button>
                       <button 
                         className="history-btn delete-btn"
                         onClick={() => deleteImage(item.id)}
                         title="Delete"
                       >
-                        🗑️
+                        <img src="/icons/flaticon/trash.svg" alt="Delete" className="flaticon-icon" />
                       </button>
                     </div>
                   </div>
@@ -164,24 +180,71 @@ function App() {
             </button>
             <div className="footer-text">
               Created by <a href="https://github.com/opensourcejay" target="_blank" rel="noopener noreferrer">@opensourcejay</a>
-            </div>
+                          </div>
           </div>
         </aside>{enlargedImage && (
           <div className="enlarged-view" onClick={() => setEnlargedImage(null)}>
             <div className="close-enlarged">×</div>
-            {enlargedImage.type === 'video' ? (
-              <video 
-                src={enlargedImage.videoUrl} 
-                controls
-                className="enlarged-video"
-                autoPlay
-              />
-            ) : (
-              <img 
-                src={enlargedImage.imageUrl} 
-                alt={enlargedImage.prompt}
-              />
-            )}            <p className="enlarged-prompt">{enlargedImage.prompt}</p>
+            <div className="enlarged-media-container">
+              {enlargedImage.type === 'video' ? (
+                <video 
+                  src={enlargedImage.videoUrl} 
+                  controls
+                  className="enlarged-video"
+                  autoPlay
+                />
+              ) : (
+                <img 
+                  src={enlargedImage.imageUrl} 
+                  alt={enlargedImage.prompt}
+                />
+              )}
+              <div className="enlarged-prompt-overlay">
+                <p>{enlargedImage.prompt}</p>
+              </div>
+            </div>
+            <div className="enlarged-share-buttons">
+              <a 
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent("I generated this using C.A.M.E.O")}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="share-button facebook"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img src="/icons/facebook.svg" alt="Share on Facebook" className="share-icon" />
+                <span>Share</span>
+              </a>
+              <a 
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent("I generated this using C.A.M.E.O")}&url=${encodeURIComponent(window.location.href)}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="share-button twitter"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img src="/icons/twitter.svg" alt="Share on X" className="share-icon" />
+                <span>Share</span>
+              </a>
+              <a 
+                href={`https://www.instagram.com/?url=${encodeURIComponent(window.location.href)}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="share-button instagram"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img src="/icons/instagram.svg" alt="Share on Instagram" className="share-icon" />
+                <span>Share</span>
+              </a>
+              <a 
+                href={`https://www.tiktok.com/upload?url=${encodeURIComponent(window.location.href)}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="share-button tiktok"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img src="/icons/tiktok.svg" alt="Share on TikTok" className="share-icon" />
+                <span>Share</span>
+              </a>
+            </div>
           </div>
         )}        <Settings 
           isOpen={settingsOpen} 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import './VideoDisplay.css';
 
-function VideoDisplay({ videoUrl, prompt, isGenerating }) {
+function VideoDisplay({ videoUrl, prompt, isGenerating, currentMedia }) {
   const [enlargedVideo, setEnlargedVideo] = useState(null);
 
   const handleVideoClick = (e) => {
@@ -14,14 +14,21 @@ function VideoDisplay({ videoUrl, prompt, isGenerating }) {
     setEnlargedVideo(null);
   };
 
+  const isProgress = currentMedia && currentMedia.isProgress;
+
   return (
     <>
       <div className="video-display">
-        {isGenerating ? (
+        {isGenerating || isProgress ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
             <p>Generating your video...</p>
             <p className="loading-info">This may take a few minutes</p>
+            <div className="progress-details">
+              <div className="progress-bar">
+                <div className="progress-indicator"></div>
+              </div>
+            </div>
           </div>
         ) : videoUrl ? (
           <div className="video-result">
@@ -49,13 +56,17 @@ function VideoDisplay({ videoUrl, prompt, isGenerating }) {
       {enlargedVideo && (
         <div className="enlarged-view" onClick={closeEnlarged}>
           <div className="close-enlarged">×</div>
-          <video 
-            src={enlargedVideo.videoUrl} 
-            controls
-            className="enlarged-video"
-            autoPlay
-          />
-          <p className="enlarged-prompt">{enlargedVideo.prompt}</p>
+          <div className="enlarged-media-container">
+            <video 
+              src={enlargedVideo.videoUrl} 
+              controls
+              className="enlarged-video"
+              autoPlay
+            />
+            <div className="enlarged-prompt-overlay">
+              <p>{enlargedVideo.prompt}</p>
+            </div>
+          </div>
         </div>
       )}
     </>
@@ -65,7 +76,8 @@ function VideoDisplay({ videoUrl, prompt, isGenerating }) {
 VideoDisplay.propTypes = {
   videoUrl: PropTypes.string,
   prompt: PropTypes.string,
-  isGenerating: PropTypes.bool.isRequired
+  isGenerating: PropTypes.bool.isRequired,
+  currentMedia: PropTypes.object
 };
 
 export default VideoDisplay;
